@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 const DEFAULT_VOICE_ID = "33B4UnXyTNbgLmdEDh5P"
-const MODEL_ID = "eleven_turbo_v2"   // NOVO MODELO FREE
+const MODEL_ID = "eleven_multilingual_v2"   
 
 export async function POST(req: Request) {
   try {

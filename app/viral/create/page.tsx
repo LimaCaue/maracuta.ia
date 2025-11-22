@@ -144,13 +144,17 @@ export default function CreateViralPage() {
       })
 
       const data = await res.json()
-      const script = data?.script || ""
+      let script = data?.script || ""
+      // Append the poll question at the end
+      script += "\n\nQual sua opinião sobre isso ?\n1 - Gostei muito\n2- mais gostei do que não gostei\n3 - neutro\n4 - mais não gostei do que gostei\n5 - não gostei"
       setGeneratedScript(script)
     } catch (e) {
       // fallback local rápido (replicar versão curta se necessário)
       const short = (text: string, n = 250) => text.replace(/\s+/g, " ").trim().slice(0, n)
       const summary = short(analysisText || `${title} — verifique os detalhes na Sentinela Vox.`, 240)
-      const fallback = `🔎 ${title}\n\n${summary}\n\nFonte: Sentinela Vox.`
+      let fallback = `🔎 ${title}\n\n${summary}\n\nFonte: Sentinela Vox.`
+      // Append the poll question at the end
+      fallback += "\n\nQual sua opinião sobre isso ?\n1 - Gostei \n2- Mais gostei do que não gostei\n3 - Neutro\n4 - Mais não gostei do que gostei\n5 - Não gostei"
       setGeneratedScript(fallback)
     } finally {
       setIsGenerating(false)
@@ -209,16 +213,19 @@ export default function CreateViralPage() {
     if (!generatedScript) return
     setIsGeneratingAudio(true)
     try {
-      console.log("tts request payload:", { script: generatedScript?.slice(0,200), voiceId: "33B4UnXyTNbgLmdEDh5P", language: "pt-BR" })
+      console.log("tts request payload:", { script: generatedScript?.slice(0,200), voiceId: "pNInz6obpgDQGcFmaJgB", language: "pt-BR", model_id: "eleven_multilingual_v2" }) // Voz portuguesa (Valentina) e modelo multilíngue
       const res = await fetch("/api/tts/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           script: generatedScript,
-          voiceId: "33B4UnXyTNbgLmdEDh5P",
-          language: "pt-BR" // instrução adicional para o backend/serviço TTS usar pt-BR
+          voiceId: "33B4UnXyTNbgLmdEDh5P", // Voz compatível com pt-BR (Valentina)
+          model_id: "eleven_multilingual_v2"
         })
       })
+
+      console.log("tts response status:", res.status)
+      console.log("tts response headers:", Object.fromEntries(res.headers.entries()))
 
       const contentType = (res.headers.get("content-type") || "").toLowerCase()
 
