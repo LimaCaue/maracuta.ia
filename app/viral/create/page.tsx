@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Shield, Sparkles, Wand2, Volume2, Video, ImageIcon, Copy, Download } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,20 +16,48 @@ export default function CreateViralPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const alertId = searchParams.get("alert")
+  const proposalId = searchParams.get("proposal") // <-- aceita ?proposal=<id>
+  const source = searchParams.get("source") // e.g. "analyze" ou "proposal"
+  const originId = searchParams.get("originId") // id da análise ou proposta de origem
   const contentType = searchParams.get("type") || "audio"
 
   const [alert, setAlert] = useState<any>(null)
+  const [proposal, setProposal] = useState<any>(null) // novo: carregamento direto da proposta
   const [tone, setTone] = useState("urgent")
   const [targetAudience, setTargetAudience] = useState("geral")
   const [generatedScript, setGeneratedScript] = useState("")
   const [isGenerating, setIsGenerating] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
+  const [isTransmitting, setIsTransmitting] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioContainerRef = useRef<HTMLDivElement | null>(null)
+
+  // revoga objectURL quando mudar / desmontar
+  useEffect(() => {
+    return () => {
+      if (audioUrl) {
+        try { URL.revokeObjectURL(audioUrl) } catch {}
+      }
+    }
+  }, [audioUrl])
 
   useEffect(() => {
     if (alertId) {
       loadAlert()
+    } else if (proposalId) {
+      loadProposal()
     }
-  }, [alertId])
+  }, [alertId, proposalId])
+  // carregar contexto quando vier apenas ?source=analyze&originId=...
+  useEffect(() => {
+    if (!alertId && source === "analyze" && originId) {
+      // tentar carregar proposta vinculada (o analyze id costuma ser o id da proposta)
+      // mantém compatibilidade caso analyze:id === proposal:id
+      loadProposalById(originId)
+    }
+  }, [source, originId, alertId])
 
   const loadAlert = async () => {
     const supabase = createClient()
@@ -50,61 +78,115 @@ export default function CreateViralPage() {
     }
   }
 
+  // Novo: carrega a proposta quando a página é aberta com ?proposal=<id>
+  const loadProposal = async () => {
+    const supabase = createClient()
+    const { data } = await supabase
+      .from("legislative_proposals")
+      .select("*")
+      .eq("id", proposalId)
+      .single()
+
+    if (data) {
+      setProposal(data)
+    }
+  }
+
+  const loadProposalById = async (id: string) => {
+    const supabase = createClient()
+    const { data } = await supabase.from("legislative_proposals").select("*").eq("id", id).single()
+    if (data) setProposal(data)
+  }
+
   const generateScript = async () => {
-    if (!alert) return
+    if (isGenerating) return
 
     setIsGenerating(true)
+    try {
+      // garante contexto (carrega se necessário)
+      if (!alert && !proposal) {
+        if (source === "analyze" && originId) {
+          await loadProposalById(originId)
+        } else if (proposalId) {
+          await loadProposal()
+        }
+      }
 
-    // Simular geração de script (em produção, usaria AI SDK)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+      if (!alert && !proposal) {
+        setIsGenerating(false)
+        return
+      }
 
-    const scripts = {
-      urgent: `🚨 ATENÇÃO URGENTE! ${alert.title}
+      const analysisText =
+        alert?.analysis_summary ||
+        alert?.generated_analysis ||
+        proposal?.aiOverview ||
+        proposal?.analysis ||
+        alert?.description ||
+        proposal?.description ||
+        ""
 
-${alert.description}
+      const title = alert?.title || proposal?.title || proposal?.external_id || "Esta proposta"
 
-Isso pode afetar VOCÊ e sua família AGORA! 
+      // chama a rota server que usa OpenAI (fallback local se chave ausente)
+      const res = await fetch("/api/viral/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          analysisText,
+          title,
+          tone,
+          audience: targetAudience,
+          contentType,
+        }),
+      })
 
-A votação é em DIAS e muita gente não sabe disso.
-
-Compartilhe para alertar quem você ama!
-
-#SentinelaVox #FiqueLigado`,
-
-      informative: `Você sabia? ${alert.title}
-
-De acordo com nossa análise da proposta ${alert.legislative_proposals?.external_id}:
-
-${alert.description}
-
-É importante entender como isso pode te afetar.
-
-Fonte: Análise Sentinela Vox
-Compartilhe para informar outros cidadãos.`,
-
-      emotional: `Imagina acordar amanhã e descobrir que aprovaram uma lei que vai mudar sua vida...
-
-😰 ${alert.title}
-
-${alert.description}
-
-Não deixe isso acontecer sem você saber!
-
-Sua família precisa saber disso. Compartilhe agora! ❤️`,
+      const data = await res.json()
+      const script = data?.script || ""
+      setGeneratedScript(script)
+    } catch (e) {
+      // fallback local rápido (replicar versão curta se necessário)
+      const short = (text: string, n = 250) => text.replace(/\s+/g, " ").trim().slice(0, n)
+      const summary = short(analysisText || `${title} — verifique os detalhes na Sentinela Vox.`, 240)
+      const fallback = `🔎 ${title}\n\n${summary}\n\nFonte: Sentinela Vox.`
+      setGeneratedScript(fallback)
+    } finally {
+      setIsGenerating(false)
     }
-
-    setGeneratedScript(scripts[tone as keyof typeof scripts] || scripts.urgent)
-    setIsGenerating(false)
   }
 
   const saveViralContent = async () => {
-    if (!alert || !generatedScript) return
+    if (!generatedScript) return
+
+    const supabase = createClient()
+    let alertIdToUse = alert?.id ?? null
+
+    // Se não houver um alerta existente, crie um alerta mínimo vinculado à proposta
+    if (!alertIdToUse) {
+      // requisito: ter proposal (vindo de ?proposal) para criar alerta
+      if (!proposal) {
+        // sem context não salvamos
+        return
+      }
+
+      const alertInsert = {
+        proposal_id: proposal.id,
+        title: proposal.title ?? `Alerta gerado para ${proposal.external_id ?? proposal.id}`,
+        description: generatedScript || proposal.description || "",
+        risk_level: "low"
+      }
+
+      const { data: insertedAlert, error: alertError } = await supabase.from("risk_alerts").insert(alertInsert).select().single()
+      if (alertError || !insertedAlert) {
+        setIsSaving(false)
+        return
+      }
+      alertIdToUse = insertedAlert.id
+    }
 
     setIsSaving(true)
-    const supabase = createClient()
-
     const { error } = await supabase.from("viral_content").insert({
-      alert_id: alert.id,
+      alert_id: alertIdToUse,
       content_type: contentType,
       script: generatedScript,
       views: 0,
@@ -112,13 +194,106 @@ Sua família precisa saber disso. Compartilhe agora! ❤️`,
     })
 
     if (!error) {
-      router.push(`/alert/${alert.id}`)
+      router.push(`/alert/${alertIdToUse}`)
     }
     setIsSaving(false)
   }
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedScript)
+  }
+
+  const generateAudio = async () => {
+    if (!generatedScript) return
+    setIsGeneratingAudio(true)
+    try {
+      const res = await fetch("/api/tts/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          script: generatedScript,
+          voiceId: "33B4UnXyTNbgLmdEDh5P" // ajuste se quiser outro voice id
+        })
+      })
+      const data = await res.json()
+      console.log("tts response:", data)
+
+      let blob: Blob | null = null
+
+      if (data?.audio) {
+        // suporta base64 string ou array de bytes
+        if (typeof data.audio === "string") {
+          try {
+            const bin = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))
+            blob = new Blob([bin], { type: data.mime || "audio/mpeg" })
+          } catch (err) {
+            console.error("Erro ao decodificar base64:", err)
+          }
+        } else if (Array.isArray(data.audio)) {
+          try {
+            const uint = new Uint8Array(data.audio)
+            blob = new Blob([uint], { type: data.mime || "audio/mpeg" })
+          } catch (err) {
+            console.error("Erro ao criar blob de array de bytes:", err)
+          }
+        }
+      } else {
+        console.error("Resposta TTS sem campo audio:", data)
+      }
+
+      if (blob) {
+        if (audioUrl) URL.revokeObjectURL(audioUrl)
+        const url = URL.createObjectURL(blob)
+        setAudioUrl(url)
+        // rola para o player e tenta tocar (apenas se permitido pelo navegador)
+        setTimeout(() => {
+          audioContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+          audioRef.current?.play().catch(() => {})
+        }, 150)
+      } else {
+        // mostra alerta no console; opcional: setState para mensagem ao usuário
+        console.error("Não foi possível criar Blob de áudio (verifique a resposta do /api/tts/generate).")
+      }
+    } catch (e) {
+      console.error("Erro ao gerar TTS:", e)
+    } finally {
+      setIsGeneratingAudio(false)
+    }
+  }
+
+  const downloadAudio = () => {
+    if (!audioUrl) return
+    const a = document.createElement("a")
+    a.href = audioUrl
+    a.download = `alert_audio_${proposal?.id ?? alert?.id ?? "script"}.mp3`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+  }
+
+  const transmitAudio = async () => {
+    if (!audioUrl) return
+    setIsTransmitting(true)
+    try {
+      // lê o blob via fetch do object URL, converte para base64 e envia ao servidor
+      const res = await fetch(audioUrl)
+      const arrayBuffer = await res.arrayBuffer()
+      const uint8 = new Uint8Array(arrayBuffer)
+      const b64 = btoa(String.fromCharCode(...uint8))
+
+      const r = await fetch("/api/tts/transmit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audio: b64, mime: "audio/mpeg" }),
+      })
+      const data = await r.json()
+      console.log("transmit response", data)
+      // opcional: mostrar notificação / mensagem ao usuário
+    } catch (e) {
+      console.error("transmit error", e)
+    } finally {
+      setIsTransmitting(false)
+    }
   }
 
   return (
@@ -147,20 +322,97 @@ Sua família precisa saber disso. Compartilhe agora! ❤️`,
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
+            {/* Índicador de origem (voltar para a análise / proposta) */}
+            {source && originId && (
+              <div className="lg:col-span-3 mb-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm">Origem</CardTitle>
+                    <CardDescription className="text-xs">Contexto desta criação viral</CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex items-center justify-between">
+                    <div className="text-sm">
+                      <div className="font-medium">{source === "analyze" ? "Análise da PL" : "Proposta"}</div>
+                      <div className="text-muted-foreground text-xs">ID: {originId}</div>
+                    </div>
+                    <div>
+                      <Link
+                        href={source === "analyze" ? `/analyze/${originId}` : `/proposal/${originId}`}
+                        className="text-sm text-primary underline"
+                      >
+                        Ver origem
+                      </Link>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             <div className="lg:col-span-2 space-y-6">
               {alert && (
                 <Card>
                   <CardHeader>
-                    <CardTitle>Alerta Selecionado</CardTitle>
+                    <CardTitle className="text-lg">Criando alerta para</CardTitle>
+                    <CardDescription>Proposta relacionada ao alerta selecionado</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-start gap-3">
-                      <span className="text-3xl">
-                        {alert.risk_level === "critical" ? "🔴" : alert.risk_level === "high" ? "🟠" : "🟡"}
-                      </span>
+                    <div className="flex items-center justify-between gap-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold mb-1">{alert.title}</h3>
-                        <p className="text-sm text-muted-foreground">{alert.description}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="font-mono">
+                            {alert.legislative_proposals?.external_id ?? alert.proposal_external_id ?? "—"}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {alert.legislative_propostas ? "Proposta vinculada" : "Sem vínculo"}
+                          </Badge>
+                        </div>
+                        <h3 className="font-semibold">{alert.legislative_proposals?.title ?? alert.title ?? "Título não disponível"}</h3>
+                        {alert.description && (
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{alert.description}</p>
+                        )}
+                      </div>
+
+                      <div className="flex-shrink-0">
+                        <Link
+                          href={`/proposal/${alert.proposal_id ?? ""}`}
+                          className="inline-block text-sm text-primary underline"
+                        >
+                          Ver proposta
+                        </Link>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              {/* Se veio apenas ?proposal=..., mostra a caixa da proposta para que o usuário saiba o contexto */}
+              {!alert && proposal && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Criando alerta para</CardTitle>
+                    <CardDescription>Proposta selecionada</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge variant="outline" className="font-mono">
+                            {proposal.external_id ?? "—"}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">Proposta vinculada</Badge>
+                        </div>
+                        <h3 className="font-semibold">{proposal.title ?? "Título não disponível"}</h3>
+                        {proposal.description && (
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{proposal.description}</p>
+                        )}
+                      </div>
+
+                      <div className="flex-shrink-0">
+                        <Link
+                          href={`/proposal/${proposal.id ?? ""}`}
+                          className="inline-block text-sm text-primary underline"
+                        >
+                          Ver proposta
+                        </Link>
                       </div>
                     </div>
                   </CardContent>
@@ -239,7 +491,14 @@ Sua família precisa saber disso. Compartilhe agora! ❤️`,
                     </RadioGroup>
                   </div>
 
-                  <Button onClick={generateScript} disabled={!alert || isGenerating} className="w-full" size="lg">
+                  <Button
+                    onClick={generateScript}
+                    // permite gerar se já estiver carregado alert/proposal ou se vier source+originId,
+                    // e bloqueia apenas enquanto está gerando
+                    disabled={isGenerating || (!alert && !proposal && !(source && originId))}
+                    className="w-full"
+                    size="lg"
+                  >
                     {isGenerating ? (
                       <>
                         <Wand2 className="mr-2 h-4 w-4 animate-spin" />
@@ -281,6 +540,23 @@ Sua família precisa saber disso. Compartilhe agora! ❤️`,
                         {isSaving ? "Salvando..." : "Salvar e Publicar"}
                       </Button>
                     </div>
+                    <div className="flex gap-2">
+                      <Button onClick={generateAudio} disabled={!generatedScript || isGeneratingAudio} className="flex-1">
+                        {isGeneratingAudio ? "Gerando Áudio..." : "Gerar Áudio (TTS)"}
+                      </Button>
+                    </div>
+                    {audioUrl && (
+                      <div ref={audioContainerRef} className="mt-3 space-y-3">
+                        <div className="p-3 border border-border rounded-lg flex items-center gap-4">
+                          <audio ref={audioRef} src={audioUrl} controls className="flex-1" />
+                          <div className="flex flex-col gap-2 w-40">
+                            <Button variant="outline" onClick={downloadAudio}>Baixar</Button>
+                            <Button onClick={transmitAudio} disabled={isTransmitting}>Transmitir Áudio</Button>
+                          </div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">Transmitir envia o áudio para o servidor (rota /api/tts/transmit) para difusão.</div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}

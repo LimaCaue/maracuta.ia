@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { Shield, AlertTriangle, Brain, FileText, TrendingUp, ArrowLeft, Sparkles } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -384,18 +384,23 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
                     <Card className="border-primary/20">
                         <CardHeader>
                             <CardTitle>Próximos Passos</CardTitle>
+                            <CardDescription>Crie conteúdo viral com base no alerta desta análise</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex flex-wrap gap-3">
-                            <Button variant="default">
-                                <FileText className="mr-2 h-4 w-4" />
-                                Gerar Relatório Completo
+                        <CardContent className="space-y-2">
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                asChild
+                                disabled={!alerts || alerts.length === 0}
+                            >
+                                <Link href={`/viral/create?alert=${alerts?.[0]?.id}&type=audio&source=analyze&originId=${id}`}>
+                                    <Shield className="mr-2 h-4 w-4" />
+                                    Criar Alerta
+                                </Link>
                             </Button>
-                            <Button variant="outline">
-                                Compartilhar Análise
-                            </Button>
-                            <Button variant="outline" asChild>
-                                <Link href={`/proposal/${id}`}>Ver Proposta Original</Link>
-                            </Button>
+                            <p className="text-xs text-muted-foreground">
+                                Usa o primeiro alerta gerado nesta análise; você pode trocar na página de criação.
+                            </p>
                         </CardContent>
                     </Card>
                 </div>

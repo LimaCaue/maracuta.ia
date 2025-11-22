@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { Shield, AlertTriangle, Users, Calendar, FileText, TrendingUp, ExternalLink } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -35,6 +35,77 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
         return "bg-blue-500/10 text-blue-700 border-blue-500/20"
     }
   }
+
+  // Gera um panorama geral da proposta usando a OpenAI (server-side).
+  async function generateOverview(proposal: any, alerts: any[]) {
+    // Fallback local curto (2-3 frases)
+    const localFallback = () => {
+      const title = proposal.title || proposal.external_id || "Proposta sem título"
+      const shortDesc = proposal.description ? proposal.description.replace(/\s+/g, " ").trim().slice(0, 180) : "Sem descrição disponível."
+      const topAlert = alerts && alerts.length ? `${alerts[0].title} (${alerts[0].risk_level})` : null
+      return [
+        `${title}: ${shortDesc}${shortDesc.length === 180 ? "…" : ""}`,
+        topAlert ? `Risco identificado: ${topAlert}` : "Nenhum risco principal identificado.",
+        `O que checar: revisar dispositivos legais alterados e possíveis emendas ocultas ("jabutis").`
+      ].join(" ")
+    }
+
+    // Sempre tente a OpenAI; peça explicitamente suma muito curto (2-3 frases).
+    if (!process.env.OPENAI_API_KEY) return localFallback()
+    try {
+      const systemPrompt = `Você é um assistente que produz um panorama geral muito conciso (em português) de uma proposta legislativa. Responda em 2-3 frases curtas e diretas, focando no propósito, principal risco/impacto e uma ação prática a checar. Sem listas e sem parágrafos longos.`
+      const userPrompt = `Proposta:
+- id: ${proposal.id}
+- título: ${proposal.title}
+- autor: ${proposal.author}
+- casa: ${proposal.house}
+- tipo: ${proposal.proposal_type}
+- status: ${proposal.status}
+- descrição: ${proposal.description || "sem descrição"}
+
+Alertas (resumo): ${
+        alerts && alerts.length
+          ? JSON.stringify(
+              alerts.slice(0, 2).map((a) => ({ title: a.title, risk_level: a.risk_level, jabuti_detected: a.jabuti_detected })),
+              null,
+              2
+            )
+          : "Nenhum alerta."
+      }
+
+Retorne um texto em 2-3 frases curtas que resuma a proposta, indique o principal risco/impacto (se houver) e diga rapidamente o que checar na análise detalhada.`
+
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          max_tokens: 180,
+          temperature: 0.0,
+        }),
+      })
+
+      if (!res.ok) return localFallback()
+      const payload = await res.json()
+      const content = payload.choices?.[0]?.message?.content?.trim() ?? null
+      // Garantir retorno curto mesmo que a API retorne algo maior
+      if (!content) return localFallback()
+      const trimmed = content.split("\n").join(" ").trim()
+      // Limita a ~280 caracteres para evitar textos longos
+      return trimmed.length > 280 ? trimmed.slice(0, 277).trim() + "…" : trimmed
+    } catch (e) {
+      return localFallback()
+    }
+  }
+
+  const aiOverview = await generateOverview(proposal, alerts || [])
 
   return (
     <div className="min-h-screen bg-background">
@@ -193,6 +264,17 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
                 <CardTitle className="text-lg">Análise Automática</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {aiOverview ? (
+                  <>
+                    <div>
+                      <h4 className="text-sm font-medium mb-2">Panorama Geral (IA)</h4>
+                      <p className="text-sm text-muted-foreground whitespace-pre-line">{aiOverview}</p>
+                    </div>
+                    <Separator />
+                  </>
+                ) : (
+                  <div className="text-sm text-muted-foreground">Panorama automático indisponível no momento.</div>
+                )}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium">Nível de Risco Geral</span>
@@ -255,11 +337,43 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
               </CardContent>
             </Card>
 
+            {/* Inserido: Próximos Passos - botão para criar conteúdo viral a partir do primeiro alerta */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Próximos Passos</CardTitle>
+                <CardDescription>Crie conteúdo viral com base neste alerta</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  asChild
+                  className="w-full"
+                  variant="outline"
+                  disabled={!alerts || alerts.length === 0}
+                >
+                  <Link href={`/viral/create?alert=${alerts?.[0]?.id}&type=audio`}>Criar Conteúdo Viral</Link>
+                </Button>
+                <p className="text-xs text-muted-foreground">
+                  O botão usa o primeiro alerta detectado desta proposta. Selecione outro alerta na página de criação, se necessário.
+                </p>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Ações</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start bg-transparent"
+                  asChild
+                  disabled={!alerts || alerts.length === 0}
+                >
+                  <Link href={`/viral/create?alert=${alerts?.[0]?.id}&type=audio`}>
+                    <Shield className="mr-2 h-4 w-4" />
+                    Criar Alerta
+                  </Link>
+                </Button>
                 <Button variant="outline" className="w-full justify-start bg-transparent">
                   <Users className="mr-2 h-4 w-4" />
                   Compartilhar Alerta
