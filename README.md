@@ -1,61 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛡️ Vox Sentinel
 
-## Installation
+Sistema inteligente de monitoramento de propostas legislativas com criação automatizada de conteúdo viral para WhatsApp.
 
-First, install the project dependencies:
+## 📋 Pré-requisitos
+
+- Node.js 18+ instalado
+- Conta no Supabase
+- APIs configuradas:
+  - OpenAI (para geração de texto)
+  - ElevenLabs (para geração de áudio)
+  - Z-API (para envio no WhatsApp)
+
+## 🚀 Instalação
+
+### 1. Clone o projeto
+
+```bash
+git clone <seu-repositorio>
+cd vox-sentinel
+```
+
+### 2. Instale as dependências
 
 ```bash
 npm install
-# or
-yarn install
-# or
-pnpm install
 ```
 
-## Environment Setup
+### 3. Configure as variáveis de ambiente
 
-Create a `.env.local` file in the root directory with the following variables:
+Edite o arquivo `.env.local` e mantenha apenas estas variáveis (remova as duplicadas):
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://ypkduvukgexmdzvnzubh.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+# OpenAI
+OPENAI_API_KEY=sk-proj-...
+
+# ElevenLabs
+ELEVENLABS_API_KEY=sk_...
+
+# Z-API WhatsApp
+WHATSAPP_INSTANCE_ID=3EAA0EA5531411620BB16EDB289F0F12
+WHATSAPP_TOKEN=C43853483F75C4AB7552805D
+WHATSAPP_CLIENT_TOKEN=F4d18bdca3fba41988ccb5e9e79ae0950S
+WHATSAPP_DEFAULT_PHONE=5511999999999
 ```
 
-> **Note:** You'll need to get the Supabase credentials from the project owner or set up your own Supabase project.
+**⚠️ Remova do .env.local:**
+- Todas as variáveis `POSTGRES_*` (não utilizadas)
+- `SUPABASE_JWT_SECRET` (não utilizado)
+- `SUPABASE_URL` duplicado (use apenas `NEXT_PUBLIC_SUPABASE_URL`)
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` duplicado (mantenha apenas um)
 
-## Getting Started
-
-After installing dependencies, run the development server:
+### 4. Inicie o servidor
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🎯 Funcionalidades Principais
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. **Monitoramento de Propostas**
+- Sincronização automática com APIs da Câmara e Senado
+- Análise inteligente via IA
+- Sistema de alertas de risco
 
-## Learn More
+### 2. **Criação de Conteúdo Viral**
+- Geração automática de texto otimizado
+- Conversão texto-para-áudio (TTS)
+- Personalização por público-alvo e tom
 
-To learn more about Next.js, take a look at the following resources:
+### 3. **Integração WhatsApp**
+- ✅ Envio para **Contatos** individuais
+- ✅ Envio para **Grupos** (com áudio)
+- ⚠️ Envio para **Canais** (apenas texto - limitação da API)
+- Listagem e criação de Canais/Grupos
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📱 Como Usar o WhatsApp
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Enviar Mensagem Viral
 
-## Deploy on Vercel
+1. Acesse `/viral/create`
+2. Gere o script com IA
+3. Gere o áudio com TTS
+4. Clique em "Carregar meus grupos" ou "Carregar meus canais"
+5. Selecione o destino
+6. Clique em "Enviar"
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Limitações Conhecidas
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Canais (Newsletters)**: A API do WhatsApp não suporta envio de áudio para canais. Apenas texto é enviado.
+- **Grupos**: Funcionam perfeitamente com texto + áudio
+
+## 🔧 Estrutura do Projeto
+
+```
+vox-sentinel/
+├── app/
+│   ├── api/              # Rotas de API
+│   │   ├── viral/        # Geração de conteúdo
+│   │   ├── tts/          # Text-to-Speech
+│   │   ├── whatsapp/     # Integração WhatsApp
+│   │   └── sync/         # Sincronização legislativa
+│   ├── viral/create/     # Interface de criação
+│   └── analyze/          # Análise de propostas
+├── lib/
+│   └── supabase/         # Cliente Supabase
+└── components/           # Componentes React
+```
+
+## 🛠️ Scripts Disponíveis
+
+```bash
+npm run dev          # Inicia servidor de desenvolvimento
+npm run build        # Compila para produção
+npm run start        # Inicia servidor de produção
+npm run lint         # Verifica código
+```
+
+## 📝 Notas Importantes
+
+1. **Chaves de API**: Nunca compartilhe suas chaves em repositórios públicos
+2. **Z-API**: Certifique-se de que sua instância está conectada e ativa
+3. **Créditos**: OpenAI e ElevenLabs consomem créditos por uso
+
+## 🐛 Troubleshooting
+
+### Erro de autenticação Supabase
+- Verifique se as chaves `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` estão corretas
+
+### Áudio não é gerado
+- Confirme que `ELEVENLABS_API_KEY` está válida
+- Verifique se tem créditos disponíveis na sua conta ElevenLabs
+
+### WhatsApp não envia
+- Confirme que `WHATSAPP_INSTANCE_ID`, `WHATSAPP_TOKEN` e `WHATSAPP_CLIENT_TOKEN` estão corretos
+- Verifique se sua instância Z-API está online
+
+## 📄 Licença
+
+Este projeto é proprietário.
+
+---
+
+**Desenvolvido para monitoramento legislativo inteligente** 🇧🇷
