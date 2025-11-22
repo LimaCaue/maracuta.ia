@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Shield, Sparkles, Wand2, Volume2, Video, ImageIcon, Copy, Download, MessageSquare } from "lucide-react"
+import { Shield, Sparkles, Wand2, Volume2, Video, ImageIcon, Copy, Download, MessageSquare, ChevronDown, ChevronUp, Check } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -41,6 +41,12 @@ export default function CreateViralPage() {
   const [isLoadingChannels, setIsLoadingChannels] = useState(false)
   const [groups, setGroups] = useState<any[]>([])
   const [isLoadingGroups, setIsLoadingGroups] = useState(false)
+
+  // UI States for collapsible lists
+  const [isChannelsOpen, setIsChannelsOpen] = useState(false)
+  const [isGroupsOpen, setIsGroupsOpen] = useState(false)
+  const [selectedChannelName, setSelectedChannelName] = useState("")
+  const [selectedGroupName, setSelectedGroupName] = useState("")
 
   // revoga objectURL atual no unmount (e gerencia revogação manual ao trocar)
   useEffect(() => {
@@ -445,7 +451,7 @@ export default function CreateViralPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Criar Conteúdo Viral</h1>
             <p className="text-muted-foreground">Configure e gere seu alerta viral em segundos</p>
@@ -690,99 +696,155 @@ export default function CreateViralPage() {
                           </h4>
 
                           {/* Channel Selector */}
-                          <div className="space-y-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full text-xs justify-start"
-                              onClick={async () => {
-                                setIsLoadingChannels(true)
-                                try {
-                                  const res = await fetch("/api/whatsapp/channel/list")
-                                  const data = await res.json()
-                                  if (Array.isArray(data)) {
-                                    setChannels(data)
-                                  } else if (data.value && Array.isArray(data.value)) {
-                                    setChannels(data.value)
-                                  } else {
-                                    window.alert("Nenhum canal encontrado ou formato desconhecido.")
-                                  }
-                                } catch (e) {
-                                  window.alert("Erro ao carregar canais.")
-                                } finally {
-                                  setIsLoadingChannels(false)
-                                }
-                              }}
-                            >
-                              {isLoadingChannels ? "Carregando canais..." : (channels.length > 0 ? "Atualizar lista de canais" : "Carregar meus canais")}
-                            </Button>
-
-                            {channels.length > 0 && (
-                              <div className="grid gap-2 max-h-40 overflow-y-auto p-2 border rounded bg-background">
-                                {channels.map((ch: any, index: number) => (
-                                  <div
-                                    key={ch.id || index}
-                                    className="flex items-center justify-between p-2 hover:bg-accent rounded cursor-pointer text-xs"
-                                    onClick={() => setPhoneNumber(ch.id || "")}
-                                  >
-                                    <div className="flex items-center gap-2">
-                                      {ch.picture && <img src={ch.picture} alt="" className="w-6 h-6 rounded-full" />}
-                                      <span className="font-medium">{ch.name || "Sem nome"}</span>
-                                    </div>
-                                    {phoneNumber === ch.id && <Badge variant="default" className="text-[10px]">Selecionado</Badge>}
-                                  </div>
-                                ))}
+                          <div className="space-y-4">
+                            {/* CANAIS */}
+                            <div className="border rounded-md p-3">
+                              <div
+                                className="flex items-center justify-between cursor-pointer"
+                                onClick={() => setIsChannelsOpen(!isChannelsOpen)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm">Canais do WhatsApp</span>
+                                  {selectedChannelName && !isChannelsOpen && (
+                                    <Badge variant="secondary" className="text-[10px] flex items-center gap-1">
+                                      <Check className="h-3 w-3" /> {selectedChannelName}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {isChannelsOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                               </div>
-                            )}
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full text-xs justify-start mt-2"
-                              onClick={async () => {
-                                setIsLoadingGroups(true)
-                                try {
-                                  const res = await fetch("/api/whatsapp/groups/list")
-                                  const data = await res.json()
-                                  if (Array.isArray(data)) {
-                                    setGroups(data)
-                                  } else if (data.value && Array.isArray(data.value)) {
-                                    setGroups(data.value)
-                                  } else {
-                                    window.alert("Nenhum grupo encontrado ou formato desconhecido.")
-                                  }
-                                } catch (e) {
-                                  window.alert("Erro ao carregar grupos.")
-                                } finally {
-                                  setIsLoadingGroups(false)
-                                }
-                              }}
-                            >
-                              {isLoadingGroups ? "Carregando grupos..." : (groups.length > 0 ? "Atualizar lista de grupos" : "Carregar meus grupos")}
-                            </Button>
-
-                            {groups.length > 0 && (
-                              <div className="grid gap-2 max-h-40 overflow-y-auto p-2 border rounded bg-background">
-                                {groups.map((grp: any, index: number) => (
-                                  <div
-                                    key={grp.id || index}
-                                    className="flex items-center justify-between p-2 hover:bg-accent rounded cursor-pointer text-xs"
-                                    onClick={() => {
-                                      console.log("Group clicked:", grp)
-                                      const id = grp.id || grp.phone || ""
-                                      if (id) setPhoneNumber(id)
-                                      else window.alert("Este grupo não tem ID válido.")
+                              {isChannelsOpen && (
+                                <div className="mt-3 space-y-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full text-xs justify-start"
+                                    onClick={async (e) => {
+                                      e.stopPropagation()
+                                      setIsLoadingChannels(true)
+                                      try {
+                                        const res = await fetch("/api/whatsapp/channel/list")
+                                        const data = await res.json()
+                                        if (Array.isArray(data)) {
+                                          setChannels(data)
+                                        } else if (data.value && Array.isArray(data.value)) {
+                                          setChannels(data.value)
+                                        } else {
+                                          window.alert("Nenhum canal encontrado ou formato desconhecido.")
+                                        }
+                                      } catch (e) {
+                                        window.alert("Erro ao carregar canais.")
+                                      } finally {
+                                        setIsLoadingChannels(false)
+                                      }
                                     }}
                                   >
-                                    <div className="flex items-center gap-2">
-                                      {grp.picture && <img src={grp.picture} alt="" className="w-6 h-6 rounded-full" />}
-                                      <span className="font-medium">{grp.name || grp.subject || "Sem nome"}</span>
+                                    {isLoadingChannels ? "Carregando canais..." : (channels.length > 0 ? "Atualizar lista" : "Carregar meus canais")}
+                                  </Button>
+
+                                  {channels.length > 0 && (
+                                    <div className="grid gap-2 max-h-60 overflow-y-auto p-1">
+                                      {channels.map((ch: any, index: number) => (
+                                        <div
+                                          key={ch.id || index}
+                                          className={`flex items-center justify-between p-2 rounded cursor-pointer text-xs border ${phoneNumber === ch.id ? "bg-primary/10 border-primary" : "hover:bg-accent border-transparent"}`}
+                                          onClick={() => {
+                                            setPhoneNumber(ch.id || "")
+                                            setSelectedChannelName(ch.name || "Canal sem nome")
+                                            setSelectedGroupName("") // Limpa seleção de grupo
+                                            setIsChannelsOpen(false) // Fecha a lista
+                                          }}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            {ch.picture && <img src={ch.picture} alt="" className="w-6 h-6 rounded-full" />}
+                                            <span className="font-medium">{ch.name || "Sem nome"}</span>
+                                          </div>
+                                          {phoneNumber === ch.id && <Check className="h-3 w-3 text-primary" />}
+                                        </div>
+                                      ))}
                                     </div>
-                                    {phoneNumber === grp.id && <Badge variant="default" className="text-[10px]">Selecionado</Badge>}
-                                  </div>
-                                ))}
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* GRUPOS */}
+                            <div className="border rounded-md p-3">
+                              <div
+                                className="flex items-center justify-between cursor-pointer"
+                                onClick={() => setIsGroupsOpen(!isGroupsOpen)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm">Grupos do WhatsApp</span>
+                                  {selectedGroupName && !isGroupsOpen && (
+                                    <Badge variant="secondary" className="text-[10px] flex items-center gap-1">
+                                      <Check className="h-3 w-3" /> {selectedGroupName}
+                                    </Badge>
+                                  )}
+                                </div>
+                                {isGroupsOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                               </div>
-                            )}
+
+                              {isGroupsOpen && (
+                                <div className="mt-3 space-y-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full text-xs justify-start"
+                                    onClick={async (e) => {
+                                      e.stopPropagation()
+                                      setIsLoadingGroups(true)
+                                      try {
+                                        const res = await fetch("/api/whatsapp/groups/list")
+                                        const data = await res.json()
+                                        if (Array.isArray(data)) {
+                                          setGroups(data)
+                                        } else if (data.value && Array.isArray(data.value)) {
+                                          setGroups(data.value)
+                                        } else {
+                                          window.alert("Nenhum grupo encontrado ou formato desconhecido.")
+                                        }
+                                      } catch (e) {
+                                        window.alert("Erro ao carregar grupos.")
+                                      } finally {
+                                        setIsLoadingGroups(false)
+                                      }
+                                    }}
+                                  >
+                                    {isLoadingGroups ? "Carregando grupos..." : (groups.length > 0 ? "Atualizar lista" : "Carregar meus grupos")}
+                                  </Button>
+
+                                  {groups.length > 0 && (
+                                    <div className="grid gap-2 max-h-60 overflow-y-auto p-1">
+                                      {groups.map((grp: any, index: number) => (
+                                        <div
+                                          key={grp.id || index}
+                                          className={`flex items-center justify-between p-2 rounded cursor-pointer text-xs border ${phoneNumber === grp.id ? "bg-primary/10 border-primary" : "hover:bg-accent border-transparent"}`}
+                                          onClick={() => {
+                                            const id = grp.id || grp.phone || ""
+                                            if (id) {
+                                              setPhoneNumber(id)
+                                              setSelectedGroupName(grp.name || grp.subject || "Grupo sem nome")
+                                              setSelectedChannelName("") // Limpa seleção de canal
+                                              setIsGroupsOpen(false) // Fecha a lista
+                                            } else {
+                                              window.alert("Este grupo não tem ID válido.")
+                                            }
+                                          }}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            {grp.picture && <img src={grp.picture} alt="" className="w-6 h-6 rounded-full" />}
+                                            <span className="font-medium">{grp.name || grp.subject || "Sem nome"}</span>
+                                          </div>
+                                          {phoneNumber === grp.id && <Check className="h-3 w-3 text-primary" />}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
 
                           <div className="flex gap-2">
