@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import process from "process"
 
 export default async function AnalyzeDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -36,8 +37,94 @@ export default async function AnalyzeDetailPage({ params }: { params: Promise<{ 
         }
     }
 
-    // Simulação de análise de IA (você pode integrar com uma API de IA real posteriormente)
-    const aiAnalysis = {
+    // ---------- INTEGRAÇÃO OPENAI + PERSISTÊNCIA ----------
+    // Coloque sua chave em .env.local: OPENAI_API_KEY=sk-...
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY
+
+    async function generateAnalysisWithOpenAI(proposalObj: any) {
+        if (!OPENAI_API_KEY) return null
+
+        const systemPrompt = `Você é uma inteligência artificial especializada em auditoria legislativa e comunicação cívica. Sua tarefa é analisar o conteúdo de uma proposta legislativa localizada no endpoint /analyze/[id] e gerar um relatório detalhado com os seguintes campos:
+
+🔍 Título do Relatório:
+"Análise Detalhada com IA – Auditoria de Riscos Legislativos"
+
+📌 Resumo Executivo:
+Descreva em até 3 frases os riscos mais relevantes da proposta, com linguagem acessível à sociedade civil.
+
+📌 Pontos-Chave Identificados:
+Liste até 4 riscos específicos, como:
+1. Impacto em direitos fundamentais
+2. Alterações em leis consolidadas sem debate público
+3. Conflito com tratados internacionais
+4. Falta de análise orçamentária
+
+📌 Recomendações:
+Sugira ações práticas, como:
+- Realização de audiências públicas
+- Solicitação de parecer técnico
+- Avaliação de impacto em grupos vulneráveis
+- Definição de vacatio legis adequada
+
+📌 Referências Legais Relevantes:
+Inclua até 3 normas ou tratados que se relacionam com os riscos identificados (ex.: Constituição Federal, Lei Complementar 95/1998, Convenção Americana de Direitos Humanos).
+
+📌 Próximos Passos:
+Simule botões de ação como:
+[Gerar Relatório Completo] [Compartilhar Análise] [Ver Proposta Original]
+
+⚠️ Importante:
+- Use linguagem clara e acessível, como se estivesse explicando para um cidadão comum.
+- Evite jargões jurídicos sem explicação.
+- Se possível, traduza o risco para um exemplo prático: “Essa lei pode permitir aumento da conta de luz sem aviso.”
+
+Retorne apenas um JSON com os campos: summary (string), keyPoints (array de strings, até 4), recommendations (array de strings), legalReferences (array de strings, até 3).`
+
+        const userContent = `Analise a seguinte proposta (JSON):\n${JSON.stringify(proposalObj)}`
+
+        const body = {
+            model: "gpt-5-mini",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userContent }
+            ],
+            max_completion_tokens: 2000,
+            temperature: 1.0,
+        }
+
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${OPENAI_API_KEY}`
+            },
+            body: JSON.stringify(body)
+        })
+
+        if (!res.ok) {
+            const txt = await res.text()
+            throw new Error(`OpenAI error: ${res.status} ${txt}`)
+        }
+
+        const data = await res.json()
+        const content = data?.choices?.[0]?.message?.content
+        if (!content) return null
+
+        try {
+            return JSON.parse(content)
+        } catch {
+            const m = content.match(/{[\s\S]*}/)
+            if (m) {
+                try {
+                    return JSON.parse(m[0])
+                } catch {}
+            }
+        }
+        return null
+    }
+
+    // Tenta recuperar análise persistida; se não existir, gera e salva
+    let aiAnalysis = {
         summary: "Esta proposta legislativa apresenta riscos significativos que requerem atenção especial da sociedade civil.",
         keyPoints: [
             "Possível impacto em direitos fundamentais garantidos pela Constituição",
@@ -56,6 +143,58 @@ export default async function AnalyzeDetailPage({ params }: { params: Promise<{ 
             "Lei Complementar 95/1998 - Elaboração de Leis",
             "Convenção Americana de Direitos Humanos (Pacto de San José da Costa Rica)"
         ]
+    }
+
+    try {
+        // verifica existência de análise persistida
+        const { data: persisted, error: fetchErr } = await supabase
+            .from("proposal_analyses")
+            .select("analysis")
+            .eq("proposal_id", id)
+            .single()
+
+        if (fetchErr && fetchErr.code !== "PGRST116") {
+            // se houver erro inesperado, lança para fallback
+            console.error("Supabase fetch analysis error:", fetchErr)
+        }
+
+        if (persisted && persisted.analysis) {
+            const remote = persisted.analysis
+            aiAnalysis = {
+                summary: remote.summary ?? aiAnalysis.summary,
+                keyPoints: Array.isArray(remote.keyPoints) ? remote.keyPoints.slice(0, 4) : aiAnalysis.keyPoints,
+                recommendations: Array.isArray(remote.recommendations) ? remote.recommendations : aiAnalysis.recommendations,
+                legalReferences: Array.isArray(remote.legalReferences) ? remote.legalReferences.slice(0, 3) : aiAnalysis.legalReferences
+            }
+        } else {
+            // só gera análise quando proposta é acessada (comportamento solicitado)
+            if (OPENAI_API_KEY) {
+                try {
+                    const remote = await generateAnalysisWithOpenAI(proposal)
+                    if (remote && remote.summary) {
+                        const finalAnalysis = {
+                            summary: remote.summary,
+                            keyPoints: Array.isArray(remote.keyPoints) ? remote.keyPoints.slice(0, 4) : aiAnalysis.keyPoints,
+                            recommendations: Array.isArray(remote.recommendations) ? remote.recommendations : aiAnalysis.recommendations,
+                            legalReferences: Array.isArray(remote.legalReferences) ? remote.legalReferences.slice(0, 3) : aiAnalysis.legalReferences
+                        }
+
+                        // salvar no Supabase para persistência "ad aeternum"
+                        await supabase.from("proposal_analyses").insert({
+                            proposal_id: id,
+                            analysis: finalAnalysis,
+                            created_at: new Date().toISOString()
+                        })
+
+                        aiAnalysis = finalAnalysis
+                    }
+                } catch (err) {
+                    console.error("OpenAI generation/persist error:", err)
+                }
+            }
+        }
+    } catch (err) {
+        console.error("Analysis workflow error:", err)
     }
 
     return (
