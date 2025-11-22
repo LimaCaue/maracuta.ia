@@ -33,15 +33,17 @@ export default function CreateViralPage() {
   const [isTransmitting, setIsTransmitting] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audioContainerRef = useRef<HTMLDivElement | null>(null)
+  const audioUrlRef = useRef<string | null>(null) // track current object URL to revoke safely
 
-  // revoga objectURL quando mudar / desmontar
+  // revoga objectURL atual no unmount (e gerencia revogação manual ao trocar)
   useEffect(() => {
     return () => {
-      if (audioUrl) {
-        try { URL.revokeObjectURL(audioUrl) } catch {}
+      if (audioUrlRef.current) {
+        try { URL.revokeObjectURL(audioUrlRef.current) } catch {}
+        audioUrlRef.current = null
       }
     }
-  }, [audioUrl])
+  }, [])
 
   useEffect(() => {
     if (alertId) {
@@ -207,51 +209,72 @@ export default function CreateViralPage() {
     if (!generatedScript) return
     setIsGeneratingAudio(true)
     try {
+      console.log("tts request payload:", { script: generatedScript?.slice(0,200), voiceId: "33B4UnXyTNbgLmdEDh5P", language: "pt-BR" })
       const res = await fetch("/api/tts/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           script: generatedScript,
-          voiceId: "33B4UnXyTNbgLmdEDh5P" // ajuste se quiser outro voice id
+          voiceId: "33B4UnXyTNbgLmdEDh5P",
+          language: "pt-BR" // instrução adicional para o backend/serviço TTS usar pt-BR
         })
       })
-      const data = await res.json()
-      console.log("tts response:", data)
+
+      const contentType = (res.headers.get("content-type") || "").toLowerCase()
 
       let blob: Blob | null = null
+      let dataJson: any = null
 
-      if (data?.audio) {
-        // suporta base64 string ou array de bytes
-        if (typeof data.audio === "string") {
-          try {
-            const bin = Uint8Array.from(atob(data.audio), c => c.charCodeAt(0))
-            blob = new Blob([bin], { type: data.mime || "audio/mpeg" })
-          } catch (err) {
-            console.error("Erro ao decodificar base64:", err)
+      if (contentType.includes("application/json")) {
+        // original behavior: JSON com campo audio (base64 ou array)
+        dataJson = await res.json()
+        console.log("tts json response:", dataJson)
+        if (dataJson?.audio) {
+          if (typeof dataJson.audio === "string") {
+            try {
+              const bin = Uint8Array.from(atob(dataJson.audio), c => c.charCodeAt(0))
+              blob = new Blob([bin], { type: dataJson.mime || "audio/mpeg" })
+            } catch (err) {
+              console.error("Erro ao decodificar base64:", err)
+            }
+          } else if (Array.isArray(dataJson.audio)) {
+            try {
+              const uint = new Uint8Array(dataJson.audio)
+              blob = new Blob([uint], { type: dataJson.mime || "audio/mpeg" })
+            } catch (err) {
+              console.error("Erro ao criar blob de array de bytes:", err)
+            }
           }
-        } else if (Array.isArray(data.audio)) {
-          try {
-            const uint = new Uint8Array(data.audio)
-            blob = new Blob([uint], { type: data.mime || "audio/mpeg" })
-          } catch (err) {
-            console.error("Erro ao criar blob de array de bytes:", err)
-          }
+        } else {
+          console.error("Resposta JSON sem campo audio:", dataJson)
         }
+      } else if (contentType.startsWith("audio/") || contentType === "application/octet-stream") {
+        // resposta binária direta (MP3)
+        const arrayBuffer = await res.arrayBuffer()
+        blob = new Blob([arrayBuffer], { type: contentType || "audio/mpeg" })
+        console.log("tts binary response received, size:", blob.size)
       } else {
-        console.error("Resposta TTS sem campo audio:", data)
+        // fallback: tentar ler como arrayBuffer e criar blob
+        const text = await res.text().catch(() => null)
+        console.warn("Resposta TTS com content-type inesperado:", contentType, "— corpo:", text?.slice?.(0,120))
       }
 
       if (blob) {
-        if (audioUrl) URL.revokeObjectURL(audioUrl)
+        // revoke previous object URL if present
+        if (audioUrlRef.current) {
+          try { URL.revokeObjectURL(audioUrlRef.current) } catch {}
+          audioUrlRef.current = null
+        }
         const url = URL.createObjectURL(blob)
+        audioUrlRef.current = url
         setAudioUrl(url)
+        console.log("audio object URL created:", url)
         // rola para o player e tenta tocar (apenas se permitido pelo navegador)
         setTimeout(() => {
           audioContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
           audioRef.current?.play().catch(() => {})
         }, 150)
       } else {
-        // mostra alerta no console; opcional: setState para mensagem ao usuário
         console.error("Não foi possível criar Blob de áudio (verifique a resposta do /api/tts/generate).")
       }
     } catch (e) {
