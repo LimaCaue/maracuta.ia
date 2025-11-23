@@ -89,16 +89,22 @@ export default function CreateViralPage() {
   const [newGroupName, setNewGroupName] = useState("")
   const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
   const [isCreatingGroup, setIsCreatingGroup] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<"idle"|"creatingAlert"|"updatingAlert"|"savingContent"|"done"|"error">("idle")
+  const [saveError, setSaveError] = useState<string|null>(null)
 
   useEffect(() => {
-    return () => {
-      if (audioUrlRef.current) {
-        try {
-          URL.revokeObjectURL(audioUrlRef.current)
-        } catch { }
-        audioUrlRef.current = null
-      }
-    }
+    const supabase = createClient()
+    const channel = supabase
+      .channel("risk_alerts_changes")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "risk_alerts" },
+        payload => {
+          console.log("INSERT risk_alerts:", payload.new)
+        }
+      )
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
   }, [])
   useEffect(() => {
     const loadData = async () => {
@@ -216,36 +222,96 @@ Mantenha linguagem clara e engajante.
 
   const saveViralContent = async () => {
     if (!generatedScript) return
+    setSaveError(null)
+    setIsSaving(true)
+    setSaveStatus("idle")
     const supabase = createClient()
     let alertIdToUse = alert?.id ?? null
 
-    if (!alertIdToUse) {
-      if (!proposal) return
-      const alertInsert = {
-        proposal_id: proposal.id,
-        title: proposal.title ?? `Alerta gerado para ${proposal.external_id ?? proposal.id}`,
-        description: generatedScript || proposal.description || "",
-        risk_level: "low",
+    try {
+      const containsMaracutaia = /maracutaia/i.test(generatedScript)
+      const containsJabuti = /jabuti/i.test(generatedScript)
+
+      if (!alertIdToUse) {
+        if (!proposal) {
+          setSaveError("Sem proposta vinculada.")
+          setSaveStatus("error")
+          setIsSaving(false)
+          return
+        }
+        setSaveStatus("creatingAlert")
+        const alertInsert = {
+          proposal_id: proposal.id,
+          title: proposal.title ?? `Alerta gerado para ${proposal.external_id ?? proposal.id}`,
+          description: generatedScript || proposal.description || "",
+          analysis_summary: generatedScript,
+          generated_analysis: generatedScript,
+          risk_level: containsMaracutaia ? "high" : "low",
+          risk_type: "public_interest",
+          jabuti_detected: containsJabuti
+        }
+        const { data: insertedAlert, error: alertError } = await supabase
+          .from("risk_alerts")
+          .insert(alertInsert)
+          .select()
+          .single()
+        if (alertError || !insertedAlert) {
+          console.error("Erro ao inserir alerta:", alertError)
+          setSaveError(alertError?.message || "Falha ao criar alerta.")
+          setSaveStatus("error")
+          setIsSaving(false)
+          return
+        }
+        console.log("Alerta criado:", insertedAlert)
+        alertIdToUse = insertedAlert.id
+      } else {
+        setSaveStatus("updatingAlert")
+        const { error: updError } = await supabase
+          .from("risk_alerts")
+          .update({
+            description: generatedScript,
+            analysis_summary: generatedScript,
+            generated_analysis: generatedScript,
+            risk_level: containsMaracutaia ? alert.risk_level ?? "high" : alert.risk_level ?? "low",
+            jabuti_detected: alert.jabuti_detected || containsJabuti
+          })
+          .eq("id", alertIdToUse)
+        if (updError) {
+          console.error("Erro ao atualizar alerta:", updError)
+          setSaveError(updError.message)
+          setSaveStatus("error")
+          setIsSaving(false)
+          return
+        }
+        console.log("Alerta atualizado:", alertIdToUse)
       }
-      const { data: insertedAlert, error: alertError } = await supabase.from("risk_alerts").insert(alertInsert).select().single()
-      if (alertError || !insertedAlert) {
+
+      setSaveStatus("savingContent")
+      const { error: viralError } = await supabase.from("viral_content").insert({
+        alert_id: alertIdToUse,
+        content_type: contentType,
+        script: generatedScript,
+        views: 0,
+        shares: 0
+      })
+      if (viralError) {
+        console.error("Erro ao salvar conteúdo viral:", viralError)
+        setSaveError(viralError.message)
+        setSaveStatus("error")
         setIsSaving(false)
         return
       }
-      alertIdToUse = insertedAlert.id
+
+      setSaveStatus("done")
+      console.log("Conteúdo salvo. Redirecionando para /alerts")
+      router.push("/alerts")
+    } catch (e: any) {
+      console.error("Exceção no saveViralContent:", e)
+      setSaveError(e?.message || "Erro inesperado.")
+      setSaveStatus("error")
+    } finally {
+      setIsSaving(false)
     }
-
-    setIsSaving(true)
-    const { error } = await supabase.from("viral_content").insert({
-      alert_id: alertIdToUse,
-      content_type: contentType,
-      script: generatedScript,
-      views: 0,
-      shares: 0,
-    })
-
-    if (!error) router.push(`/alert/${alertIdToUse}`)
-    setIsSaving(false)
   }
 
   const copyToClipboard = () => navigator.clipboard.writeText(generatedScript)
@@ -618,13 +684,20 @@ Mantenha linguagem clara e engajante.
                     />
 
                     <div className="flex gap-4">
-                      <Button variant="outline" onClick={copyToClipboard} className="flex-1 h-12 border-2 border-black rounded-xl font-bold hover:bg-gray-100 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
-                        <Copy className="mr-2 h-4 w-4" /> Copiar
-                      </Button>
-                      <Button onClick={saveViralContent} disabled={isSaving} className="flex-1 h-12 bg-black text-white border-2 border-black rounded-xl font-bold shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] hover:shadow-[2px_2px_0px_0px_rgba(100,100,100,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all">
+                      <Button variant="outline" onClick={copyToClipboard} className="flex-1 h-12 border-2 border-black rounded-xl font-bold">Copiar</Button>
+                      <Button onClick={saveViralContent} disabled={isSaving} className="flex-1 h-12 bg-black text-white border-2 border-black rounded-xl font-bold">
                         {isSaving ? "Salvando..." : "Salvar"}
                       </Button>
                     </div>
+                    {saveStatus !== "idle" && (
+                      <div className="mt-4 text-sm font-bold">
+                        {saveStatus === "creatingAlert" && "Criando alerta..."}
+                        {saveStatus === "updatingAlert" && "Atualizando alerta..."}
+                        {saveStatus === "savingContent" && "Salvando conteúdo..."}
+                        {saveStatus === "done" && <span className="text-green-600">Salvo com sucesso.</span>}
+                        {saveStatus === "error" && <span className="text-red-600">Erro: {saveError}</span>}
+                      </div>
+                    )}
 
                     {audioUrl && (
                       <div ref={audioContainerRef} className="mt-8 pt-8 border-t-4 border-black border-dashed space-y-6">
