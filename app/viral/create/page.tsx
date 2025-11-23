@@ -141,14 +141,18 @@ export default function CreateViralPage() {
 
   const generateScript = async () => {
     if (isGenerating) return
+
     setIsGenerating(true)
     let analysisText = ""
     let title = ""
 
     try {
       if (!alert && !proposal) {
-        if (source === "analyze" && originId) await loadProposalById(originId)
-        else if (proposalId) await loadProposal()
+        if (source === "analyze" && originId) {
+          await loadProposalById(originId)
+        } else if (proposalId) {
+          await loadProposal()
+        }
       }
 
       if (!alert && !proposal) {
@@ -156,18 +160,43 @@ export default function CreateViralPage() {
         return
       }
 
-      analysisText = alert?.analysis_summary || alert?.generated_analysis || proposal?.aiOverview || proposal?.analysis || alert?.description || proposal?.description || ""
+      analysisText =
+        alert?.analysis_summary ||
+        alert?.generated_analysis ||
+        proposal?.aiOverview ||
+        proposal?.analysis ||
+        alert?.description ||
+        proposal?.description ||
+        ""
+
       title = alert?.title || proposal?.title || proposal?.external_id || "Esta proposta"
+
+      // NOVO: Instrução para a LLM avaliar risco e incluir frase se alto
+      const riskDirective = `
+INSTRUÇÃO ADICIONAL:
+1. Avalie o nível de risco da proposta (baixo, médio ou alto) considerando impacto, brechas, efeitos colaterais e possibilidade de uso indevido.
+2. Se o risco for classificado como ALTO, inclua explicitamente no roteiro a frase exata:
+"Esta proposta tem uma maracutaia no meio dela."
+3. Justifique de forma breve (1–2 frases) os pontos críticos se for alto.
+Mantenha linguagem clara e engajante.
+`
 
       const res = await fetch("/api/viral/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ analysisText, title, tone, audience: targetAudience, contentType }),
+        body: JSON.stringify({
+          analysisText: `${analysisText}\n\n${riskDirective}`,
+          title,
+          tone,
+          audience: targetAudience,
+          contentType,
+        }),
       })
 
       const data = await res.json()
       let script = data?.script || ""
-      script += "\n\nQual sua opinião sobre isso ?\n1 - Concordo\n2 - Concordo parcialmente\n3 - Neutro\n4 - Discordo parcialmente\n5 - Discordo"
+      script +=
+        "\n\nQual sua opinião sobre isso ?\n1- Concordo totalmente\n2 - Concordo parcialmente\n3 - Neutro\n4 - Discordo parcialmente\n5 - Discordo totalmente"
       setGeneratedScript(script)
 
       setTimeout(() => {
@@ -177,7 +206,8 @@ export default function CreateViralPage() {
       const short = (text: string, n = 250) => text.replace(/\s+/g, " ").trim().slice(0, n)
       const summary = short(analysisText || `${title} — verifique os detalhes na Sentinela Vox.`, 240)
       let fallback = `🔎 ${title}\n\n${summary}\n\nFonte: Sentinela Vox.`
-      fallback += "\n\nQual sua opinião sobre isso ?\n1 - Concordo\n2 - Concordo parcialmente\n3 - Neutro\n4 - Discordo parcialmente\n5 - Discordo"
+      fallback +=
+        "\n\nQual sua opinião sobre isso ?\n1- Concordo totalmente\n2 - Concordo parcialmente\n3 - Neutro\n4 - Discordo parcialmente\n5 - Discordo totalmente"
       setGeneratedScript(fallback)
     } finally {
       setIsGenerating(false)
