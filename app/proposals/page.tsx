@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
-import { Shield, FileText, Search, ChevronLeft, ChevronRight, Calendar, RefreshCw } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Shield, FileText, Search, ChevronLeft, ChevronRight, Calendar, RefreshCw, Filter, ArrowRight } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -59,189 +58,210 @@ export default async function ProposalsPage({
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden">
+    <div className="min-h-screen bg-[#FFFDF5] text-black font-sans selection:bg-yellow-200 pb-20">
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <Shield className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">MaracutaIA</span>
+      {/* Header Neo-Brutalism */}
+      <header className="sticky top-0 z-50 border-b-4 border-black bg-white">
+        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-black text-white flex items-center justify-center rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Shield className="h-6 w-6" />
+            </div>
+            <Link href="/" className="text-2xl font-black tracking-tight hover:underline decoration-4 decoration-pink-500">
+              Maracuta<span className="text-pink-500">IA</span>
             </Link>
-            <nav className="flex items-center gap-4">
-              <Button variant="ghost" asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="ghost" asChild>
-                <Link href="/alerts">Alertas</Link>
-              </Button>
-              <Button variant="ghost" asChild>
-                <Link href="/proposals">Propostas</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/viral">Gerar Alerta</Link>
-              </Button>
-            </nav>
           </div>
+          <nav className="hidden md:flex items-center gap-4">
+            <Button variant="ghost" className="font-bold hover:bg-yellow-200 hover:text-black border-2 border-transparent hover:border-black transition-all" asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </Button>
+            <Button variant="ghost" className="font-bold hover:bg-yellow-200 hover:text-black border-2 border-transparent hover:border-black transition-all" asChild>
+              <Link href="/alerts">Alertas</Link>
+            </Button>
+            <Button variant="ghost" className="font-bold bg-black text-white border-2 border-black hover:bg-gray-800 hover:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]" asChild>
+              <Link href="/proposals">Propostas</Link>
+            </Button>
+            <Button className="bg-pink-500 text-black border-2 border-black font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all" asChild>
+              <Link href="/viral">Gerar Alerta</Link>
+            </Button>
+          </nav>
         </div>
       </header>
 
-      <main className="relative z-10 container mx-auto px-4 py-8">
-        <div className="flex flex-col gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Propostas Legislativas</h1>
-            <p className="text-muted-foreground">Monitoramento de propostas da Câmara e Senado</p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-lg border border-border">
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <FilterSelect />
+      <main className="container mx-auto px-6 py-12">
+        <div className="w-full max-w-[1200px] mx-auto">
+          <div className="flex flex-col gap-8 mb-12">
+            <div>
+              <div className="inline-block bg-blue-400 text-black border-2 border-black px-4 py-1 rounded-full font-bold text-sm shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-[-2deg] mb-2">
+                Legislativo 🏛️
+              </div>
+              <h1 className="text-5xl font-black mb-2">Propostas Legislativas</h1>
+              <p className="text-xl font-medium text-zinc-600">Acompanhe o que está sendo tramado.</p>
             </div>
 
-            <form className="relative flex-1 w-full sm:max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                name="q"
-                defaultValue={query}
-                placeholder="Buscar por título ou ID..."
-                className="pl-10"
-              />
-              <input type="hidden" name="type" value={type} />
-              <input type="hidden" name="page" value="1" />
-            </form>
+            <div className="bg-white border-4 border-black rounded-2xl p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row gap-4 items-center">
+              <div className="w-full md:w-auto min-w-[200px]">
+                <FilterSelect />
+              </div>
+
+              <form className="relative flex-1 w-full flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-black" />
+                  <Input
+                    name="q"
+                    defaultValue={query}
+                    placeholder="Buscar por título ou ID..."
+                    className="pl-12 h-12 border-2 border-black rounded-xl font-medium focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+                  />
+                </div>
+                <Button type="submit" className="h-12 bg-black text-white border-2 border-black rounded-xl font-bold hover:bg-gray-800">
+                  Buscar
+                </Button>
+                <input type="hidden" name="type" value={type} />
+                <input type="hidden" name="page" value="1" />
+              </form>
+            </div>
           </div>
-        </div>
 
-        <div className="grid gap-4">
-          {proposals && proposals.length > 0 ? (
-            proposals.map((proposal) => {
-              // @ts-ignore
-              const hasAlerts = proposal.risk_alerts && proposal.risk_alerts.length > 0
-              // @ts-ignore
-              const criticalAlert = proposal.risk_alerts?.some((a) => a.risk_level === "critical")
-              // @ts-ignore
-              const hasJabuti = proposal.risk_alerts?.some((a) => a.jabuti_detected)
+          <div className="grid gap-8">
+            {proposals && proposals.length > 0 ? (
+              proposals.map((proposal) => {
+                // @ts-ignore
+                const hasAlerts = proposal.risk_alerts && proposal.risk_alerts.length > 0
+                // @ts-ignore
+                const criticalAlert = proposal.risk_alerts?.some((a) => a.risk_level === "critical")
+                // @ts-ignore
+                const hasJabuti = proposal.risk_alerts?.some((a) => a.jabuti_detected)
 
-              return (
-                <Card
-                  key={proposal.id}
-                  className={`bg-card hover:shadow-md transition-shadow ${criticalAlert ? "border-red-500/50" : ""}`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3 flex-wrap">
-                          <Badge variant="outline" className="font-mono">
-                            {proposal.external_id}
+                return (
+                  <div
+                    key={proposal.id}
+                    className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] transition-all duration-300 group"
+                  >
+                    <div className="p-6 md:p-8">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <Badge className="bg-black text-white border-2 border-black rounded-lg px-3 py-1 font-mono font-bold text-sm">
+                          {proposal.external_id}
+                        </Badge>
+                        <Badge className="bg-yellow-300 text-black border-2 border-black rounded-lg px-3 py-1 font-bold text-sm">
+                          {proposal.house === "camara" ? "Câmara" : "Senado"}
+                        </Badge>
+                        <Badge className="bg-white text-black border-2 border-black rounded-lg px-3 py-1 font-bold text-sm">
+                          {proposal.proposal_type}
+                        </Badge>
+                        {hasAlerts && (
+                          <Badge className="bg-red-500 text-white border-2 border-black rounded-lg px-3 py-1 font-bold text-sm animate-pulse">
+                            {/* @ts-ignore */}
+                            {proposal.risk_alerts.length} Alerta(s)
                           </Badge>
-                          <Badge variant="secondary">{proposal.house === "camara" ? "Câmara" : "Senado"}</Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {proposal.proposal_type}
+                        )}
+                        {hasJabuti && (
+                          <Badge className="bg-green-500 text-white border-2 border-black rounded-lg px-3 py-1 font-bold text-sm">
+                            🐢 Jabuti
                           </Badge>
-                          {hasAlerts && (
-                            <Badge variant="destructive" className="text-xs">
-                              {/* @ts-ignore */}
-                              {proposal.risk_alerts.length} Alerta(s)
-                            </Badge>
-                          )}
-                          {hasJabuti && (
-                            <Badge variant="destructive" className="text-xs">
-                              Jabuti Detectado
-                            </Badge>
-                          )}
+                        )}
+                      </div>
+
+                      <h2 className="text-2xl font-black mb-3 leading-tight group-hover:text-blue-600 transition-colors">
+                        {proposal.title}
+                      </h2>
+                      <p className="text-lg font-medium text-zinc-600 mb-6 line-clamp-2">
+                        {proposal.description}
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-gray-50 border-2 border-black border-dashed rounded-xl p-4 mb-6">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-xs uppercase text-zinc-500 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" /> Criada em
+                          </span>
+                          <span className="font-bold">{formatDate(proposal.created_at)}</span>
                         </div>
-
-                        <h2 className="text-xl font-bold mb-2">{proposal.title}</h2>
-                        <p className="text-muted-foreground mb-4 line-clamp-2">{proposal.description}</p>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs text-muted-foreground bg-muted/30 p-3 rounded-md">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium flex items-center gap-1">
-                              <Calendar className="h-3 w-3" /> Criada em
-                            </span>
-                            <span>{formatDate(proposal.created_at)}</span>
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium flex items-center gap-1">
-                              <RefreshCw className="h-3 w-3" /> Atualizada em
-                            </span>
-                            <span>{formatDate(proposal.updated_at)}</span>
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium flex items-center gap-1">
-                              <FileText className="h-3 w-3" /> Apresentada em
-                            </span>
-                            {/* @ts-ignore */}
-                            <span>{formatDate(proposal.presentation_date)}</span>
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <span className="font-medium flex items-center gap-1">
-                              <RefreshCw className="h-3 w-3" /> Última Mudança
-                            </span>
-                            {/* @ts-ignore */}
-                            <span>{formatDate(proposal.last_synced_at || proposal.updated_at)}</span>
-                          </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-xs uppercase text-zinc-500 flex items-center gap-1">
+                            <RefreshCw className="h-3 w-3" /> Atualizada em
+                          </span>
+                          <span className="font-bold">{formatDate(proposal.updated_at)}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-xs uppercase text-zinc-500 flex items-center gap-1">
+                            <FileText className="h-3 w-3" /> Apresentada em
+                          </span>
+                          {/* @ts-ignore */}
+                          <span className="font-bold">{formatDate(proposal.presentation_date)}</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-bold text-xs uppercase text-zinc-500 flex items-center gap-1">
+                            <RefreshCw className="h-3 w-3" /> Última Mudança
+                          </span>
+                          {/* @ts-ignore */}
+                          <span className="font-bold">{formatDate(proposal.last_synced_at || proposal.updated_at)}</span>
                         </div>
                       </div>
 
-                      <Button asChild className="shrink-0">
-                        <Link href={`/proposal/${proposal.id}`}>Ver Detalhes</Link>
-                      </Button>
+                      <div className="flex justify-end">
+                        <Button className="bg-black text-white border-2 border-black rounded-xl font-bold shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(100,100,100,1)] transition-all" asChild>
+                          <Link href={`/proposal/${proposal.id}`}>
+                            Ver Detalhes
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })
-          ) : (
-            <Card className="bg-card">
-              <CardContent className="p-12 text-center">
-                <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h2 className="text-xl font-bold mb-2">Nenhuma proposta encontrada</h2>
-                <p className="text-muted-foreground">Tente ajustar os filtros ou buscar por outro termo.</p>
-              </CardContent>
-            </Card>
+                  </div>
+                )
+              })
+            ) : (
+              <div className="bg-white border-4 border-black rounded-3xl p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                <div className="bg-gray-100 w-24 h-24 rounded-full border-4 border-black flex items-center justify-center mx-auto mb-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                  <FileText className="h-12 w-12 text-zinc-400" />
+                </div>
+                <h2 className="text-3xl font-black mb-2">Nada por aqui!</h2>
+                <p className="text-xl text-zinc-500 font-medium">Nenhuma proposta encontrada com esses filtros.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-12">
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={page <= 1}
+                className="h-12 w-12 border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0"
+                asChild={page > 1}
+              >
+                {page > 1 ? (
+                  <Link href={`/proposals?type=${type}&page=${page - 1}&q=${query}`}>
+                    <ChevronLeft className="h-6 w-6" />
+                  </Link>
+                ) : (
+                  <ChevronLeft className="h-6 w-6" />
+                )}
+              </Button>
+
+              <span className="text-lg font-black bg-white border-2 border-black px-4 py-2 rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                Página {page} de {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="icon"
+                disabled={page >= totalPages}
+                className="h-12 w-12 border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0"
+                asChild={page < totalPages}
+              >
+                {page < totalPages ? (
+                  <Link href={`/proposals?type=${type}&page=${page + 1}&q=${query}`}>
+                    <ChevronRight className="h-6 w-6" />
+                  </Link>
+                ) : (
+                  <ChevronRight className="h-6 w-6" />
+                )}
+              </Button>
+            </div>
           )}
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={page <= 1}
-              asChild={page > 1}
-            >
-              {page > 1 ? (
-                <Link href={`/proposals?type=${type}&page=${page - 1}&q=${query}`}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Link>
-              ) : (
-                <ChevronLeft className="h-4 w-4" />
-              )}
-            </Button>
-
-            <span className="text-sm text-muted-foreground">
-              Página {page} de {totalPages}
-            </span>
-
-            <Button
-              variant="outline"
-              size="icon"
-              disabled={page >= totalPages}
-              asChild={page < totalPages}
-            >
-              {page < totalPages ? (
-                <Link href={`/proposals?type=${type}&page=${page + 1}&q=${query}`}>
-                  <ChevronRight className="h-4 w-4" />
-                </Link>
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-        )}
       </main>
     </div>
   )

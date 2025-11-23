@@ -1,9 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
-import { Shield, AlertTriangle, Brain, FileText, TrendingUp, ArrowLeft, Sparkles } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Shield, AlertTriangle, Brain, FileText, TrendingUp, ArrowLeft, Sparkles, Zap, Scale, Siren } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import process from "process"
@@ -27,13 +25,13 @@ export default async function AnalyzeDetailPage({ params }: { params: Promise<{ 
     const getRiskColor = (level: string) => {
         switch (level) {
             case "critical":
-                return "bg-red-500/10 text-red-700 border-red-500/20"
+                return "bg-red-500 text-white border-red-700"
             case "high":
-                return "bg-orange-500/10 text-orange-700 border-orange-500/20"
+                return "bg-orange-500 text-white border-orange-700"
             case "medium":
-                return "bg-yellow-500/10 text-yellow-700 border-yellow-500/20"
+                return "bg-yellow-400 text-black border-yellow-600"
             default:
-                return "bg-blue-500/10 text-blue-700 border-blue-500/20"
+                return "bg-blue-400 text-white border-blue-600"
         }
     }
 
@@ -83,7 +81,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
         const userContent = `Analise a seguinte proposta (JSON):\n${JSON.stringify(proposalObj)}`
 
         const body = {
-            model: "gpt-5-mini",
+            model: "gpt-4o-mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userContent }
@@ -198,212 +196,208 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
     }
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden">
+        <div className="min-h-screen bg-[#FFFDF5] text-black font-sans selection:bg-yellow-200 pb-20">
 
-            <header className="relative z-10 border-b border-border bg-card">
-                <div className="container mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <Link href="/" className="flex items-center gap-2">
-                            <Shield className="h-8 w-8 text-primary" />
-                            <span className="text-2xl font-bold">MaracutaIA</span>
+            {/* Header Neo-Brutalism */}
+            <header className="sticky top-0 z-50 border-b-4 border-black bg-white">
+                <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-black text-white flex items-center justify-center rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                            <Shield className="h-6 w-6" />
+                        </div>
+                        <Link href="/" className="text-2xl font-black tracking-tight hover:underline decoration-4 decoration-pink-500">
+                            Maracuta<span className="text-pink-500">IA</span>
                         </Link>
-                        <nav className="flex items-center gap-4">
-                            <Button variant="ghost" asChild>
-                                <Link href="/dashboard">Dashboard</Link>
-                            </Button>
-                            <Button variant="ghost" asChild>
-                                <Link href="/alerts">Alertas</Link>
-                            </Button>
-                            <Button variant="ghost" asChild>
-                                <Link href="/proposals">Propostas</Link>
-                            </Button>
-                        </nav>
                     </div>
+                    <nav className="hidden md:flex items-center gap-4">
+                        <Button variant="ghost" className="font-bold hover:bg-yellow-200 hover:text-black border-2 border-transparent hover:border-black transition-all" asChild>
+                            <Link href="/dashboard">Dashboard</Link>
+                        </Button>
+                        <Button variant="ghost" className="font-bold hover:bg-yellow-200 hover:text-black border-2 border-transparent hover:border-black transition-all" asChild>
+                            <Link href="/alerts">Alertas</Link>
+                        </Button>
+                        <Button variant="ghost" className="font-bold hover:bg-yellow-200 hover:text-black border-2 border-transparent hover:border-black transition-all" asChild>
+                            <Link href="/proposals">Propostas</Link>
+                        </Button>
+                        <Button className="bg-pink-500 text-black border-2 border-black font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all" asChild>
+                            <Link href="/viral">Gerar Alerta</Link>
+                        </Button>
+                    </nav>
                 </div>
             </header>
 
-            <main className="relative z-10 container mx-auto px-4 py-8">
-                <Button variant="ghost" asChild className="mb-6">
-                    <Link href={`/proposal/${id}`}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Voltar para Proposta
-                    </Link>
-                </Button>
+            <main className="container mx-auto px-6 py-12">
+                <div className="w-full max-w-[1200px] mx-auto">
+                    <Button variant="ghost" asChild className="mb-8 font-bold hover:bg-yellow-200 border-2 border-transparent hover:border-black transition-all">
+                        <Link href={`/proposal/${id}`}>
+                            <ArrowLeft className="mr-2 h-5 w-5" />
+                            Voltar para Proposta
+                        </Link>
+                    </Button>
 
-                <div className="space-y-6">
-                    {/* Header com informações da proposta */}
-                    <Card className="border-primary/70 backdrop-blur-sm">
-                        <CardHeader>
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 rounded-lg bg-primary/10">
-                                    <Brain className="h-8 w-8 text-primary" />
+                    <div className="space-y-8">
+                        {/* Header com informações da proposta */}
+                        <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                            <div className="bg-purple-500 border-b-4 border-black p-6 flex items-center gap-3">
+                                <div className="bg-white p-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                                    <Brain className="h-6 w-6 text-black" />
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Sparkles className="h-5 w-5 text-primary" />
-                                        <CardTitle className="text-2xl">Análise Detalhada com IA</CardTitle>
+                                <h2 className="text-2xl font-black text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,1)" }}>Análise Detalhada com IA</h2>
+                            </div>
+                            <div className="p-6 md:p-8">
+                                <div className="flex flex-wrap items-center gap-3 mb-4">
+                                    <Badge className="bg-black text-white border-2 border-black rounded-lg px-3 py-1 font-mono font-bold text-sm">
+                                        {proposal.external_id}
+                                    </Badge>
+                                    <Badge className="bg-yellow-300 text-black border-2 border-black rounded-lg px-3 py-1 font-bold text-sm">
+                                        {proposal.house === "camara" ? "Câmara dos Deputados" : "Senado Federal"}
+                                    </Badge>
+                                    <Badge className="bg-white text-black border-2 border-black rounded-lg px-3 py-1 font-bold text-sm">
+                                        {proposal.proposal_type}
+                                    </Badge>
+                                </div>
+                                <h1 className="text-3xl md:text-4xl font-black mb-4 leading-tight">{proposal.title}</h1>
+                                <p className="text-lg font-medium text-zinc-600">
+                                    Análise aprofundada utilizando inteligência artificial para identificar riscos e impactos.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Resumo da Análise */}
+                        <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                            <div className="bg-blue-400 border-b-4 border-black p-6 flex items-center gap-3">
+                                <div className="bg-white p-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                                    <FileText className="h-6 w-6 text-black" />
+                                </div>
+                                <h2 className="text-2xl font-black text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,1)" }}>Resumo Executivo</h2>
+                            </div>
+                            <div className="p-6 md:p-8">
+                                <p className="text-xl font-medium leading-relaxed">{aiAnalysis.summary}</p>
+                            </div>
+                        </div>
+
+                        {/* Alertas Detectados */}
+                        {alerts && alerts.length > 0 && (
+                            <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="bg-red-500 border-b-4 border-black p-6 flex items-center gap-3">
+                                    <div className="bg-white p-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                                        <Siren className="h-6 w-6 text-black" />
                                     </div>
-                                    <p className="text-muted-foreground">
-                                        Análise aprofundada utilizando inteligência artificial para identificar riscos e impactos
-                                    </p>
+                                    <h2 className="text-2xl font-black text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,1)" }}>Alertas Identificados ({alerts.length})</h2>
                                 </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="outline" className="font-mono">
-                                    {proposal.external_id}
-                                </Badge>
-                                <Badge variant="secondary">
-                                    {proposal.house === "camara" ? "Câmara dos Deputados" : "Senado Federal"}
-                                </Badge>
-                                <Badge variant="outline">{proposal.proposal_type}</Badge>
-                            </div>
-                            <h2 className="text-xl font-semibold mt-4">{proposal.title}</h2>
-                        </CardContent>
-                    </Card>
-
-                    {/* Resumo da Análise */}
-                    <Card className="bg-card">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="h-5 w-5" />
-                                Resumo Executivo
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-muted-foreground leading-relaxed">{aiAnalysis.summary}</p>
-                        </CardContent>
-                    </Card>
-
-                    {/* Alertas Detectados */}
-                    {alerts && alerts.length > 0 && (
-                        <Card className="bg-card">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <AlertTriangle className="h-5 w-5 text-destructive" />
-                                    Alertas Identificados ({alerts.length})
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {alerts.map((alert) => (
-                                    <div key={alert.id} className="border border-border rounded-lg p-4 space-y-3">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            <Badge className={getRiskColor(alert.risk_level)}>
-                                                {alert.risk_level.toUpperCase()}
-                                            </Badge>
-                                            <Badge variant="outline" className="text-xs">
-                                                {alert.risk_type.replace("_", " ").toUpperCase()}
-                                            </Badge>
-                                            {alert.jabuti_detected && (
-                                                <Badge variant="destructive" className="text-xs">
-                                                    Jabuti Detectado
+                                <div className="p-6 md:p-8 space-y-4">
+                                    {alerts.map((alert) => (
+                                        <div key={alert.id} className="bg-gray-50 border-2 border-black rounded-xl p-6 hover:bg-white transition-colors">
+                                            <div className="flex flex-wrap items-center gap-2 mb-3">
+                                                <Badge className={`${getRiskColor(alert.risk_level)} border-2 rounded-lg px-3 py-1 font-black text-xs`}>
+                                                    {alert.risk_level.toUpperCase()}
                                                 </Badge>
+                                                <Badge className="bg-white text-black border-2 border-black rounded-lg px-3 py-1 font-bold text-xs">
+                                                    {alert.risk_type.replace("_", " ").toUpperCase()}
+                                                </Badge>
+                                                {alert.jabuti_detected && (
+                                                    <Badge className="bg-green-500 text-white border-2 border-black rounded-lg px-3 py-1 font-black text-xs">
+                                                        🐢 JABUTI
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <h3 className="text-xl font-black mb-2">{alert.title}</h3>
+                                            <p className="text-base font-medium text-zinc-600 mb-3">{alert.description}</p>
+                                            {alert.affected_population && alert.affected_population.length > 0 && (
+                                                <div className="text-sm font-bold text-zinc-500 bg-white border-2 border-black rounded-lg p-2 inline-block">
+                                                    <span className="text-black">População Afetada:</span> {alert.affected_population.join(", ")}
+                                                </div>
                                             )}
                                         </div>
-                                        <div>
-                                            <h3 className="font-semibold mb-2">{alert.title}</h3>
-                                            <p className="text-sm text-muted-foreground">{alert.description}</p>
-                                        </div>
-                                        {alert.affected_population && alert.affected_population.length > 0 && (
-                                            <div className="text-xs text-muted-foreground">
-                                                <span className="font-medium">População Afetada:</span>{" "}
-                                                {alert.affected_population.join(", ")}
-                                            </div>
-                                        )}
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid lg:grid-cols-2 gap-8">
+                            {/* Pontos-Chave */}
+                            <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="bg-yellow-300 border-b-4 border-black p-6 flex items-center gap-3">
+                                    <div className="bg-white p-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                                        <TrendingUp className="h-6 w-6 text-black" />
                                     </div>
-                                ))}
-                            </CardContent>
-                        </Card>
-                    )}
+                                    <h2 className="text-2xl font-black text-black">Pontos-Chave</h2>
+                                </div>
+                                <div className="p-6 md:p-8">
+                                    <ul className="space-y-4">
+                                        {aiAnalysis.keyPoints.map((point, index) => (
+                                            <li key={index} className="flex items-start gap-4">
+                                                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-black text-white border-2 border-black flex items-center justify-center font-black text-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                                                    {index + 1}
+                                                </div>
+                                                <span className="text-lg font-medium text-zinc-700 pt-0.5">{point}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
 
-                    <div className="grid lg:grid-cols-2 gap-6">
-                        {/* Pontos-Chave */}
-                        <Card className="bg-card">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <TrendingUp className="h-5 w-5" />
-                                    Pontos-Chave Identificados
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
+                            {/* Recomendações */}
+                            <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="bg-green-400 border-b-4 border-black p-6 flex items-center gap-3">
+                                    <div className="bg-white p-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                                        <Sparkles className="h-6 w-6 text-black" />
+                                    </div>
+                                    <h2 className="text-2xl font-black text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,1)" }}>Recomendações</h2>
+                                </div>
+                                <div className="p-6 md:p-8">
+                                    <ul className="space-y-4">
+                                        {aiAnalysis.recommendations.map((rec, index) => (
+                                            <li key={index} className="flex items-start gap-3">
+                                                <Zap className="h-6 w-6 text-yellow-500 fill-yellow-500 shrink-0 mt-0.5" />
+                                                <span className="text-lg font-medium text-zinc-700">{rec}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Referências Legais */}
+                        <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+                            <div className="bg-gray-200 border-b-4 border-black p-6 flex items-center gap-3">
+                                <div className="bg-white p-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
+                                    <Scale className="h-6 w-6 text-black" />
+                                </div>
+                                <h2 className="text-2xl font-black text-black">Referências Legais</h2>
+                            </div>
+                            <div className="p-6 md:p-8">
                                 <ul className="space-y-3">
-                                    {aiAnalysis.keyPoints.map((point, index) => (
-                                        <li key={index} className="flex items-start gap-3">
-                                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-medium">
-                                                {index + 1}
-                                            </span>
-                                            <span className="text-sm text-muted-foreground pt-0.5">{point}</span>
+                                    {aiAnalysis.legalReferences.map((ref, index) => (
+                                        <li key={index} className="text-lg font-medium text-zinc-600 flex items-start gap-3 bg-gray-50 p-3 rounded-xl border-2 border-transparent hover:border-black transition-all">
+                                            <span className="text-black font-black">§</span>
+                                            <span>{ref}</span>
                                         </li>
                                     ))}
                                 </ul>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
 
-                        {/* Recomendações */}
-                        <Card className="bg-card">
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Sparkles className="h-5 w-5" />
-                                    Recomendações
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ul className="space-y-3">
-                                    {aiAnalysis.recommendations.map((rec, index) => (
-                                        <li key={index} className="flex items-start gap-3">
-                                            <span className="text-primary mt-1">•</span>
-                                            <span className="text-sm text-muted-foreground">{rec}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </CardContent>
-                        </Card>
-                    </div>
+                        {/* Ações */}
+                        <div className="bg-pink-100 border-4 border-black rounded-3xl p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] text-center">
+                            <h2 className="text-3xl font-black mb-4">Próximos Passos</h2>
+                            <p className="text-xl font-medium text-zinc-600 mb-8">Crie conteúdo viral com base no alerta desta análise e espalhe a verdade.</p>
 
-                    {/* Referências Legais */}
-                    <Card className="bg-card">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <FileText className="h-5 w-5" />
-                                Referências Legais Relevantes
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ul className="space-y-2">
-                                {aiAnalysis.legalReferences.map((ref, index) => (
-                                    <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                                        <span className="text-primary mt-1">→</span>
-                                        <span>{ref}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                    </Card>
-
-                    {/* Ações */}
-                    <Card className="border-primary/20 bg-card">
-                        <CardHeader>
-                            <CardTitle>Próximos Passos</CardTitle>
-                            <CardDescription>Crie conteúdo viral com base no alerta desta análise</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
                             <Button
-                                variant="outline"
-                                className="w-full"
+                                className="w-full md:w-auto h-14 text-lg bg-black text-white border-2 border-black rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(100,100,100,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(100,100,100,1)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 asChild
                                 disabled={!alerts || alerts.length === 0}
                             >
                                 <Link href={`/viral/create?alert=${alerts?.[0]?.id}&type=audio&source=analyze&originId=${id}`}>
-                                    <Shield className="mr-2 h-4 w-4" />
-                                    Criar Alerta
+                                    <Shield className="mr-2 h-5 w-5" />
+                                    Gerar Alerta Viral Agora
                                 </Link>
                             </Button>
-                            <p className="text-xs text-muted-foreground">
-                                Usa o primeiro alerta gerado nesta análise; você pode trocar na página de criação.
+                            <p className="text-sm font-bold text-zinc-500 mt-4">
+                                *Usa o primeiro alerta gerado nesta análise.
                             </p>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
