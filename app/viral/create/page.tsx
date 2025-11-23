@@ -59,7 +59,7 @@ export default function CreateViralPage() {
   const [isSendingWhatsapp, setIsSendingWhatsapp] = useState(false)
   const [sendPoll, setSendPoll] = useState(true)
   const [pollQuestion, setPollQuestion] = useState("Qual sua opinião sobre isso?")
-  const [pollOptions, setPollOptions] = useState<string[]>(["Concordo", "Discordo", "Neutro"])
+  const [pollOptions, setPollOptions] = useState<string[]>(["1- Concordo totalmente","2 - Concordo parcialmente", "3 - Neutro", "4 - Discordo parcialmente", "5 - Discordo totalmente"])
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audioContainerRef = useRef<HTMLDivElement | null>(null)
@@ -175,11 +175,21 @@ export default function CreateViralPage() {
 
       title = alert?.title || proposal?.title || proposal?.external_id || "Esta proposta"
 
+      // NOVO: Instrução para a LLM avaliar risco e incluir frase se alto
+      const riskDirective = `
+INSTRUÇÃO ADICIONAL:
+1. Avalie o nível de risco da proposta (baixo, médio ou alto) considerando impacto, brechas, efeitos colaterais e possibilidade de uso indevido.
+2. Se o risco for classificado como ALTO, inclua explicitamente no roteiro a frase exata:
+"Esta proposta tem uma maracutaia no meio dela."
+3. Justifique de forma breve (1–2 frases) os pontos críticos se for alto.
+Mantenha linguagem clara e engajante.
+`
+
       const res = await fetch("/api/viral/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          analysisText,
+          analysisText: `${analysisText}\n\n${riskDirective}`,
           title,
           tone,
           audience: targetAudience,
@@ -190,7 +200,7 @@ export default function CreateViralPage() {
       const data = await res.json()
       let script = data?.script || ""
       script +=
-        "\n\nQual sua opinião sobre isso ?\n1 - Gostei muito\n2- mais gostei do que não gostei\n3 - neutro\n4 - mais não gostei do que gostei\n5 - não gostei"
+        "\n\nQual sua opinião sobre isso ?\n1- Concordo totalmente\n2 - Concordo parcialmente\n3 - Neutro\n4 - Discordo parcialmente\n5 - Discordo totalmente"
       setGeneratedScript(script)
 
       setTimeout(() => {
@@ -201,54 +211,93 @@ export default function CreateViralPage() {
       const summary = short(analysisText || `${title} — verifique os detalhes na Sentinela Vox.`, 240)
       let fallback = `🔎 ${title}\n\n${summary}\n\nFonte: Sentinela Vox.`
       fallback +=
-        "\n\nQual sua opinião sobre isso ?\n1 - Gostei \n2- Mais gostei do que não gostei\n3 - Neutro\n4 - Mais não gostei do que gostei\n5 - Não gostei"
+        "\n\nQual sua opinião sobre isso ?\n1- Concordo totalmente\n2 - Concordo parcialmente\n3 - Neutro\n4 - Discordo parcialmente\n5 - Discordo totalmente"
       setGeneratedScript(fallback)
     } finally {
       setIsGenerating(false)
     }
   }
 
-  const saveViralContent = async () => {
-    if (!generatedScript) return
-
+  const saveRiskAlertIfNeeded = async () => {
     const supabase = createClient()
-    let alertIdToUse = alert?.id ?? null
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      window.alert("Faça login antes de criar alerta.")
+      return null
+    }
+    if (alert?.id) return alert.id
 
-    if (!alertIdToUse) {
-      if (!proposal) return
+    const insertPayload: any = {
+      proposal_id: proposal?.id,
+      title: proposal?.title ?? `Alerta para ${proposal?.external_id ?? proposal?.id}`,
+      description: proposal?.description ?? "",
+      risk_level: proposal?.risk_level || "low",
+      risk_type: proposal?.risk_type || "general",
+      jabuti_detected: false,
+      created_by: session.user.id, // usar somente se criou a coluna
+    }
 
-      const alertInsert = {
-        proposal_id: proposal.id,
-        title: proposal.title ?? `Alerta gerado para ${proposal.external_id ?? proposal.id}`,
-        description: generatedScript || proposal.description || "",
-        risk_level: "low",
-      }
+    if (!insertPayload.proposal_id) {
+      window.alert("Proposta não carregada.")
+      return null
+    }
 
-      const { data: insertedAlert, error: alertError } = await supabase
-        .from("risk_alerts")
-        .insert(alertInsert)
-        .select()
-        .single()
-      if (alertError || !insertedAlert) {
-        setIsSaving(false)
-        return
-      }
-      alertIdToUse = insertedAlert.id
+    const { data, error } = await supabase
+      .from("risk_alerts")
+      .insert(insertPayload)
+      .select()
+      .single()
+
+    if (error) {
+      console.error(error)
+      window.alert("Erro ao criar alerta: " + error.message)
+      return null
+    }
+
+    setAlert(data)
+    return data.id
+  }
+
+  const saveViralContent = async () => {
+    if (!generatedScript.trim()) {
+      window.alert("Gere ou edite o script antes de salvar.")
+      return
     }
 
     setIsSaving(true)
-    const { error } = await supabase.from("viral_content").insert({
-      alert_id: alertIdToUse,
-      content_type: contentType,
-      script: generatedScript,
-      views: 0,
-      shares: 0,
-    })
+    const supabase = createClient()
+    const alertIdToUse = (await saveRiskAlertIfNeeded()) ?? alert?.id
 
-    if (!error) {
-      router.push(`/alert/${alertIdToUse}`)
+    if (!alertIdToUse) {
+      console.warn("[viral_content] Abortado: sem alert_id.")
+      window.alert("Falha: alerta não criado (verifique RLS/policies).")
+      setIsSaving(false)
+      return
     }
-    setIsSaving(false)
+
+    console.log("[viral_content] Inserindo com alert_id:", alertIdToUse)
+
+    try {
+      const { error } = await supabase.from("viral_content").insert({
+        alert_id: alertIdToUse,
+        content_type: contentType,
+        script: generatedScript,
+        views: 0,
+        shares: 0,
+      })
+
+      if (error) {
+        console.error("[viral_content] Erro:", error)
+        window.alert("Erro ao salvar conteúdo: " + error.message)
+      } else {
+        window.alert("Conteúdo salvo no histórico.")
+      }
+    } catch (e: any) {
+      console.error("[viral_content] Exceção insert:", e)
+      window.alert("Exceção ao salvar conteúdo. Veja console.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const copyToClipboard = () => {

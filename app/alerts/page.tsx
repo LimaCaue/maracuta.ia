@@ -13,6 +13,7 @@ export default async function AlertsPage() {
     .select(`
       *,
       legislative_proposals (
+        id,
         title,
         external_id,
         house,
@@ -94,51 +95,37 @@ export default async function AlertsPage() {
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="text-4xl">{getRiskIcon(alert.risk_level)}</div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-4 mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <Badge className={getRiskColor(alert.risk_level)}>{alert.risk_level.toUpperCase()}</Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {alert.risk_type.replace("_", " ").toUpperCase()}
-                            </Badge>
-                            {alert.jabuti_detected && (
-                              <Badge variant="destructive" className="text-xs">
-                                Jabuti Detectado
-                              </Badge>
-                            )}
-                          </div>
-                          <h2 className="text-xl font-bold mb-2">{alert.title}</h2>
-                          <p className="text-muted-foreground mb-4">{alert.description}</p>
-                        </div>
+                    <div className="flex-1 space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        <Badge className={getRiskColor(alert.risk_level)}>
+                          {alert.risk_level?.toUpperCase() || "N/A"}
+                        </Badge>
+                        {alert.risk_type && (
+                          <Badge variant="outline">
+                            {String(alert.risk_type).replace(/_/g, " ").toUpperCase()}
+                          </Badge>
+                        )}
+                        {alert.jabuti_detected && (
+                          <Badge variant="destructive">JABUTI</Badge>
+                        )}
                       </div>
-
-                      <div className="border-t border-border pt-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="font-medium">Proposta:</span>
-                              {/* @ts-ignore */}
-                              <span className="text-muted-foreground">{alert.legislative_proposals?.external_id}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="font-medium">População Afetada:</span>
-                              <span className="text-muted-foreground">
-                                {alert.affected_population?.join(", ") || "Geral"}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" size="sm" asChild>
-                              {/* @ts-ignore */}
-                              <Link href={`/proposal/${alert.legislative_proposals?.id || alert.proposal_id}`}>
-                                Ver Proposta
-                              </Link>
-                            </Button>
-                            <Button size="sm" asChild>
-                              <Link href={`/alert/${alert.id}`}>Detalhes</Link>
-                            </Button>
-                          </div>
+                      <h3 className="font-semibold text-lg">
+                        {alert.title || "Alerta sem título"}
+                      </h3>
+                      <p className="text-sm text-muted-foreground line-clamp-4">
+                        {alert.description || "Sem descrição."}
+                      </p>
+                      <div className="flex justify-between items-center pt-4 border-t border-border">
+                        <div className="text-xs text-muted-foreground">
+                          Criado: {new Date(alert.created_at).toLocaleString("pt-BR")}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/proposal/${alert.proposal_id}`}>Proposta</Link>
+                          </Button>
+                          <Button size="sm" asChild>
+                            <Link href={`/alert/${alert.id}`}>Detalhes</Link>
+                          </Button>
                         </div>
                       </div>
                     </div>
