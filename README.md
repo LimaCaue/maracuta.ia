@@ -1,151 +1,116 @@
-# 🛡️ MaracutaIA
+# MaracutaIA 🛡️
 
 Sistema inteligente de monitoramento de propostas legislativas com criação automatizada de conteúdo viral para WhatsApp.
 
-## 📋 Pré-requisitos
+## 👥 Membros da Equipe
 
-- Node.js 18+ instalado
-- Conta no Supabase
-- APIs configuradas:
-  - OpenAI (para geração de texto)
-  - ElevenLabs (para geração de áudio)
-  - Z-API (para envio no WhatsApp)
+*   **Nome:** [Cauê Costa] - **Email:** [caue.costa@acutistecnologia.com]
+*   **Nome:** [Fernando d'Ávila] - **Email:** [fernando.davila@acutistecnologia.com]
+*   **Nome:** [Caio Costa] - **Email:** [lima@acutistecnologia.com]
 
-## 🚀 Instalação
+---
 
-### 1. Clone o projeto
+## 🚀 Como Rodar o Projeto Localmente
+
+Siga este passo a passo para configurar e executar o projeto em sua máquina.
+
+### 1. Pré-requisitos
+
+*   **Node.js** (versão 18 ou superior)
+*   **npm** (gerenciador de pacotes)
+
+### 2. Instalação
+
+Clone o repositório e instale as dependências:
 
 ```bash
-git clone <seu-repositorio>
+git clone <url-do-repositorio>
 cd vox-sentinel
-```
-
-### 2. Instale as dependências
-
-```bash
 npm install
 ```
 
-### 3. Configure as variáveis de ambiente
+### 3. Configuração do Banco de Dados (Supabase)
 
-Edite o arquivo `.env.local` e mantenha apenas estas variáveis (remova as duplicadas):
+Para que o projeto funcione corretamente, é necessário criar as tabelas no banco de dados.
+
+1.  Acesse o painel do seu projeto no [Supabase](https://supabase.com/).
+2.  Vá até a seção **SQL Editor** (ícone de terminal na barra lateral).
+3.  Clique em **New Query**.
+4.  Copie o conteúdo dos arquivos da pasta `scripts/` deste projeto e execute-os na seguinte ordem:
+    *   `scripts/001_create_tables.sql` (Criação das tabelas base)
+    *   `scripts/002_add_sync_metadata.sql` (Metadados para sincronização)
+    *   `scripts/002_seed_data.sql` (Dados iniciais de teste - opcional)
+5.  Clique em **Run** para executar cada script.
+
+### 4. Configuração das Variáveis de Ambiente
+
+Crie um arquivo chamado `.env.local` na raiz do projeto. Você precisará das seguintes chaves:
+
+#### 🔹 Supabase (Banco de Dados e Autenticação)
+1.  No painel do Supabase, vá em **Project Settings** (ícone de engrenagem) > **API**.
+2.  Copie as seguintes chaves:
+    *   `Project URL` -> `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_URL`
+    *   `anon public` -> `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    *   `service_role` (secret) -> `SUPABASE_SERVICE_ROLE_KEY`
+
+#### 🔹 OpenAI (Inteligência Artificial)
+1.  Crie uma conta na [OpenAI Platform](https://platform.openai.com/).
+2.  Vá em **API Keys** e crie uma nova chave secreta.
+    *   Chave gerada -> `OPENAI_API_KEY`
+
+#### 🔹 Z-API (Integração com WhatsApp)
+1.  Crie uma conta e uma instância na [Z-API](https://z-api.io/).
+2.  No painel da instância, copie:
+    *   `ID da Instância` -> `WHATSAPP_INSTANCE_ID`
+    *   `Token da Instância` -> `WHATSAPP_TOKEN`
+    *   `Client Token` (em Segurança) -> `WHATSAPP_CLIENT_TOKEN`
+3.  Defina um número padrão para testes (formato internacional, ex: 5511999999999) -> `WHATSAPP_DEFAULT_PHONE`
+
+#### 📄 Exemplo do arquivo `.env.local`:
 
 ```env
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://ypkduvukgexmdzvnzubh.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+NEXT_PUBLIC_SUPABASE_ANON_KEY="sua_chave_anon_aqui"
+NEXT_PUBLIC_SUPABASE_URL="sua_url_supabase_aqui"
+SUPABASE_SERVICE_ROLE_KEY="sua_chave_service_role_aqui"
+SUPABASE_URL="sua_url_supabase_aqui"
 
 # OpenAI
-OPENAI_API_KEY=sk-proj-...
+OPENAI_API_KEY="sk-..."
 
-# ElevenLabs
-ELEVENLABS_API_KEY=sk_...
-
-# Z-API WhatsApp
-WHATSAPP_INSTANCE_ID=3EAA0EA5531411620BB16EDB289F0F12
-WHATSAPP_TOKEN=C43853483F75C4AB7552805D
-WHATSAPP_CLIENT_TOKEN=F4d18bdca3fba41988ccb5e9e79ae0950S
-WHATSAPP_DEFAULT_PHONE=5511999999999
+# WhatsApp (Z-API)
+WHATSAPP_INSTANCE_ID="seu_instance_id"
+WHATSAPP_TOKEN="seu_token"
+WHATSAPP_DEFAULT_PHONE="5511999999999"
+WHATSAPP_CLIENT_TOKEN="seu_client_token"
 ```
 
-**⚠️ Remova do .env.local:**
-- Todas as variáveis `POSTGRES_*` (não utilizadas)
-- `SUPABASE_JWT_SECRET` (não utilizado)
-- `SUPABASE_URL` duplicado (use apenas `NEXT_PUBLIC_SUPABASE_URL`)
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` duplicado (mantenha apenas um)
+### 5. Construção (Build)
 
-### 4. Inicie o servidor
+Para construir o projeto para produção:
+
+```bash
+npm run build
+```
+
+### 6. Execução
+
+Para rodar o projeto em modo de desenvolvimento:
 
 ```bash
 npm run dev
 ```
 
-Acesse [http://localhost:3000](http://localhost:3000)
+Acesse [http://localhost:3000](http://localhost:3000) no seu navegador.
 
-## 🎯 Funcionalidades Principais
-
-### 1. **Monitoramento de Propostas**
-- Sincronização automática com APIs da Câmara e Senado
-- Análise inteligente via IA
-- Sistema de alertas de risco
-
-### 2. **Criação de Conteúdo Viral**
-- Geração automática de texto otimizado
-- Conversão texto-para-áudio (TTS)
-- Personalização por público-alvo e tom
-
-### 3. **Integração WhatsApp**
-- ✅ Envio para **Contatos** individuais
-- ✅ Envio para **Grupos** (com áudio)
-- ⚠️ Envio para **Canais** (apenas texto - limitação da API)
-- Listagem e criação de Canais/Grupos
-
-## 📱 Como Usar o WhatsApp
-
-### Enviar Mensagem Viral
-
-1. Acesse `/viral/create`
-2. Gere o script com IA
-3. Gere o áudio com TTS
-4. Clique em "Carregar meus grupos" ou "Carregar meus canais"
-5. Selecione o destino
-6. Clique em "Enviar"
-
-### Limitações Conhecidas
-
-- **Canais (Newsletters)**: A API do WhatsApp não suporta envio de áudio para canais. Apenas texto é enviado.
-- **Grupos**: Funcionam perfeitamente com texto + áudio
-
-## 🔧 Estrutura do Projeto
-
-```
-vox-sentinel/
-├── app/
-│   ├── api/              # Rotas de API
-│   │   ├── viral/        # Geração de conteúdo
-│   │   ├── tts/          # Text-to-Speech
-│   │   ├── whatsapp/     # Integração WhatsApp
-│   │   └── sync/         # Sincronização legislativa
-│   ├── viral/create/     # Interface de criação
-│   └── analyze/          # Análise de propostas
-├── lib/
-│   └── supabase/         # Cliente Supabase
-└── components/           # Componentes React
-```
-
-## 🛠️ Scripts Disponíveis
+Para rodar a versão de produção (após o build):
 
 ```bash
-npm run dev          # Inicia servidor de desenvolvimento
-npm run build        # Compila para produção
-npm run start        # Inicia servidor de produção
-npm run lint         # Verifica código
+npm run start
 ```
-
-## 📝 Notas Importantes
-
-1. **Chaves de API**: Nunca compartilhe suas chaves em repositórios públicos
-2. **Z-API**: Certifique-se de que sua instância está conectada e ativa
-3. **Créditos**: OpenAI e ElevenLabs consomem créditos por uso
-
-## 🐛 Troubleshooting
-
-### Erro de autenticação Supabase
-- Verifique se as chaves `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` estão corretas
-
-### Áudio não é gerado
-- Confirme que `ELEVENLABS_API_KEY` está válida
-- Verifique se tem créditos disponíveis na sua conta ElevenLabs
-
-### WhatsApp não envia
-- Confirme que `WHATSAPP_INSTANCE_ID`, `WHATSAPP_TOKEN` e `WHATSAPP_CLIENT_TOKEN` estão corretos
-- Verifique se sua instância Z-API está online
-
-## 📄 Licença
-
-Este projeto é proprietário.
 
 ---
 
-**Desenvolvido para monitoramento legislativo inteligente** 🇧🇷
+## 📄 Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para mais detalhes.
