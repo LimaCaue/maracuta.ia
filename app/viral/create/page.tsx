@@ -89,8 +89,8 @@ export default function CreateViralPage() {
   const [newGroupName, setNewGroupName] = useState("")
   const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
   const [isCreatingGroup, setIsCreatingGroup] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<"idle"|"creatingAlert"|"updatingAlert"|"savingContent"|"done"|"error">("idle")
-  const [saveError, setSaveError] = useState<string|null>(null)
+  const [saveStatus, setSaveStatus] = useState<"idle" | "creatingAlert" | "updatingAlert" | "savingContent" | "done" | "error">("idle")
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -483,7 +483,7 @@ Mantenha linguagem clara e engajante.
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-black text-white flex items-center justify-center rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Shield className="h-6 w-6" />
+              <img src="/favicon.ico" className="h-6 w-6" />
             </div>
             <span className="text-2xl font-black tracking-tight">Maracuta<span className="text-pink-500">IA</span></span>
           </div>

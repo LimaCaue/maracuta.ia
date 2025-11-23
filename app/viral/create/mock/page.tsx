@@ -273,7 +273,7 @@ export default function ViralCreateMockPage() {
       setAudioUrl(url)
       setTimeout(() => {
         audioContainerRef.current?.scrollIntoView({ behavior: "smooth" })
-        audioRef.current?.play().catch(() => {})
+        audioRef.current?.play().catch(() => { })
       }, 150)
     } catch {
       // silencioso
@@ -342,17 +342,17 @@ export default function ViralCreateMockPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           recipients: phones,
-            text: generatedScript,
-            audio: audioBase64,
-            poll
+          text: generatedScript,
+          audio: audioBase64,
+          poll
         })
       })
       const data = await res.json()
 
       const sucesso = data.successCount ?? (Array.isArray(data.results)
         ? data.results.filter((r: any) =>
-            ["sent","sent_as_document"].includes(r.status)
-          ).length
+          ["sent", "sent_as_document"].includes(r.status)
+        ).length
         : 0)
 
       const falhas = data.failCount ?? (Array.isArray(data.results)
@@ -432,7 +432,7 @@ export default function ViralCreateMockPage() {
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-black text-white flex items-center justify-center rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Shield className="h-6 w-6" />
+              <img src="/favicon.ico" className="h-6 w-6" />
             </div>
             <span className="text-2xl font-black tracking-tight">Maracuta<span className="text-pink-500">IA</span></span>
           </div>
@@ -628,171 +628,171 @@ export default function ViralCreateMockPage() {
                     )}
 
                     {audioUrl && (
-                                          <div ref={audioContainerRef} className="mt-8 pt-8 border-t-4 border-black border-dashed space-y-6">
-                                            <div className="bg-yellow-50 border-2 border-black rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
-                                              <div className="h-12 w-12 bg-yellow-400 rounded-full border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                                                <Volume2 className="h-6 w-6 text-black" />
-                                              </div>
-                                              <audio ref={audioRef} src={audioUrl} controls className="flex-1 w-full" />
-                                              <div className="flex gap-2">
-                                                <Button onClick={downloadAudio} size="icon" className="bg-white text-black border-2 border-black rounded-lg hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
-                                                  <ArrowRight className="h-4 w-4 rotate-90" />
-                                                </Button>
-                                              </div>
-                                            </div>
-                    
-                                            <div className="bg-gray-50 border-2 border-black rounded-2xl p-6 space-y-4">
-                                              <h4 className="font-black text-lg flex items-center gap-2">
-                                                <MessageSquare className="h-5 w-5" />
-                                                Disparar no WhatsApp
-                                              </h4>
-                    
-                                              {/* Seleção de Contatos */}
-                                              <div className="space-y-4">
-                                                <div className="flex gap-2">
-                                                  <Button
-                                                    onClick={() => setIsContactsOpen(!isContactsOpen)}
-                                                    className={`flex-1 border-2 border-black rounded-xl font-bold ${isContactsOpen ? 'bg-black text-white' : 'bg-white text-black'} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all`}
-                                                  >
-                                                    Contatos {isContactsOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                                                  </Button>
-                                                  <Button
-                                                    onClick={() => setIsGroupsOpen(!isGroupsOpen)}
-                                                    className={`flex-1 border-2 border-black rounded-xl font-bold ${isGroupsOpen ? 'bg-black text-white' : 'bg-white text-black'} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all`}
-                                                  >
-                                                    Grupos {isGroupsOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                                                  </Button>
-                                                </div>
-                    
-                                                {/* Lista de Contatos */}
-                                                {isContactsOpen && (
-                                                  <div className="bg-white border-2 border-black rounded-xl p-4 animate-in slide-in-from-top-2">
-                                                    <Button
-                                                      onClick={async () => {
-                                                        setIsLoadingContacts(true)
-                                                        try {
-                                                          const res = await fetch("/api/whatsapp/contacts/list?pageSize=5000")
-                                                          const data = await res.json()
-                                                          setContacts(Array.isArray(data) ? data : data.value || [])
-                                                        } catch (e) { window.alert("Erro ao carregar") }
-                                                        finally { setIsLoadingContacts(false) }
-                                                      }}
-                                                      className="w-full mb-4 bg-yellow-300 text-black border-2 border-black font-bold hover:bg-yellow-400"
-                                                    >
-                                                      {isLoadingContacts ? "Carregando..." : "Carregar Contatos"}
-                                                    </Button>
-                    
-                                                    {contacts.length > 0 && (
-                                                      <div className="space-y-2">
-                                                        <Input
-                                                          placeholder="Buscar..."
-                                                          value={contactSearchQuery}
-                                                          onChange={e => setContactSearchQuery(e.target.value)}
-                                                          className="border-2 border-black rounded-lg"
-                                                        />
-                                                        <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
-                                                          {contacts.filter(c => (c.name || c.phone || "").toLowerCase().includes(contactSearchQuery.toLowerCase())).map((c, i) => {
-                                                            const isSelected = selectedRecipients.some(r => r.id === c.phone)
-                                                            return (
-                                                              <div
-                                                                key={i}
-                                                                onClick={() => {
-                                                                  if (isSelected) setSelectedRecipients(prev => prev.filter(r => r.id !== c.phone))
-                                                                  else setSelectedRecipients([...selectedRecipients, { id: c.phone, name: c.name || c.phone, type: "contact" }])
-                                                                }}
-                                                                className={`p-2 border-2 rounded-lg cursor-pointer flex items-center justify-between font-medium text-sm transition-all ${isSelected ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-black'}`}
-                                                              >
-                                                                <span>{c.name || c.phone}</span>
-                                                                {isSelected && <Check className="h-4 w-4" />}
-                                                              </div>
-                                                            )
-                                                          })}
-                                                        </div>
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                )}
-                    
-                                                {/* Lista de Grupos */}
-                                                {isGroupsOpen && (
-                                                  <div className="bg-white border-2 border-black rounded-xl p-4 animate-in slide-in-from-top-2">
-                                                    <Button
-                                                      onClick={async () => {
-                                                        setIsLoadingGroups(true)
-                                                        try {
-                                                          const res = await fetch("/api/whatsapp/groups/list")
-                                                          const data = await res.json()
-                                                          setGroups(Array.isArray(data) ? data : data.value || [])
-                                                        } catch (e) { window.alert("Erro ao carregar") }
-                                                        finally { setIsLoadingGroups(false) }
-                                                      }}
-                                                      className="w-full mb-4 bg-blue-300 text-black border-2 border-black font-bold hover:bg-blue-400"
-                                                    >
-                                                      {isLoadingGroups ? "Carregando..." : "Carregar Grupos"}
-                                                    </Button>
-                    
-                                                    {groups.length > 0 && (
-                                                      <div className="space-y-2">
-                                                        <Input
-                                                          placeholder="Buscar grupos..."
-                                                          value={groupSearchQuery}
-                                                          onChange={e => setGroupSearchQuery(e.target.value)}
-                                                          className="border-2 border-black rounded-lg"
-                                                        />
-                                                        <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
-                                                          {groups.filter(g => (g.name || g.subject || "").toLowerCase().includes(groupSearchQuery.toLowerCase())).map((g, i) => {
-                                                            const id = g.id || g.phone
-                                                            const isSelected = selectedRecipients.some(r => r.id === id)
-                                                            return (
-                                                              <div
-                                                                key={i}
-                                                                onClick={() => {
-                                                                  if (isSelected) setSelectedRecipients(prev => prev.filter(r => r.id !== id))
-                                                                  else setSelectedRecipients([...selectedRecipients, { id, name: g.name || g.subject, type: "group" }])
-                                                                }}
-                                                                className={`p-2 border-2 rounded-lg cursor-pointer flex items-center justify-between font-medium text-sm transition-all ${isSelected ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-black'}`}
-                                                              >
-                                                                <span>{g.name || g.subject}</span>
-                                                                {isSelected && <Check className="h-4 w-4" />}
-                                                              </div>
-                                                            )
-                                                          })}
-                                                        </div>
-                                                      </div>
-                                                    )}
-                                                    <Button
-                                                      onClick={() => setIsCreateGroupModalOpen(true)}
-                                                      variant="ghost"
-                                                      className="w-full mt-2 text-xs font-bold hover:bg-gray-100"
-                                                    >
-                                                      <Plus className="h-3 w-3 mr-1" /> Criar Novo Grupo
-                                                    </Button>
-                                                  </div>
-                                                )}
-                    
-                                                {/* Selecionados */}
-                                                <div className="flex flex-wrap gap-2">
-                                                  {selectedRecipients.map(r => (
-                                                    <Badge key={r.id} className="bg-white text-black border-2 border-black pl-2 pr-1 py-1 rounded-lg font-bold flex items-center gap-1">
-                                                      {r.name}
-                                                      <button onClick={() => setSelectedRecipients(prev => prev.filter(x => x.id !== r.id))} className="hover:bg-red-100 rounded p-0.5">
-                                                        <Trash2 className="h-3 w-3 text-red-500" />
-                                                      </button>
-                                                    </Badge>
-                                                  ))}
-                                                </div>
-                    
-                                                <Button
-                                                  onClick={sendToWhatsapp}
-                                                  disabled={isSendingWhatsapp || selectedRecipients.length === 0}
-                                                  className="w-full h-14 bg-green-500 text-black border-2 border-black rounded-xl font-black text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-green-400 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                                >
-                                                  {isSendingWhatsapp ? "Enviando..." : `Enviar para ${selectedRecipients.length} destinatários`}
-                                                </Button>
-                                              </div>
-                                            </div>
+                      <div ref={audioContainerRef} className="mt-8 pt-8 border-t-4 border-black border-dashed space-y-6">
+                        <div className="bg-yellow-50 border-2 border-black rounded-2xl p-4 flex flex-col sm:flex-row items-center gap-4">
+                          <div className="h-12 w-12 bg-yellow-400 rounded-full border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                            <Volume2 className="h-6 w-6 text-black" />
+                          </div>
+                          <audio ref={audioRef} src={audioUrl} controls className="flex-1 w-full" />
+                          <div className="flex gap-2">
+                            <Button onClick={downloadAudio} size="icon" className="bg-white text-black border-2 border-black rounded-lg hover:bg-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
+                              <ArrowRight className="h-4 w-4 rotate-90" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="bg-gray-50 border-2 border-black rounded-2xl p-6 space-y-4">
+                          <h4 className="font-black text-lg flex items-center gap-2">
+                            <MessageSquare className="h-5 w-5" />
+                            Disparar no WhatsApp
+                          </h4>
+
+                          {/* Seleção de Contatos */}
+                          <div className="space-y-4">
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => setIsContactsOpen(!isContactsOpen)}
+                                className={`flex-1 border-2 border-black rounded-xl font-bold ${isContactsOpen ? 'bg-black text-white' : 'bg-white text-black'} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all`}
+                              >
+                                Contatos {isContactsOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                              </Button>
+                              <Button
+                                onClick={() => setIsGroupsOpen(!isGroupsOpen)}
+                                className={`flex-1 border-2 border-black rounded-xl font-bold ${isGroupsOpen ? 'bg-black text-white' : 'bg-white text-black'} shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all`}
+                              >
+                                Grupos {isGroupsOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                              </Button>
+                            </div>
+
+                            {/* Lista de Contatos */}
+                            {isContactsOpen && (
+                              <div className="bg-white border-2 border-black rounded-xl p-4 animate-in slide-in-from-top-2">
+                                <Button
+                                  onClick={async () => {
+                                    setIsLoadingContacts(true)
+                                    try {
+                                      const res = await fetch("/api/whatsapp/contacts/list?pageSize=5000")
+                                      const data = await res.json()
+                                      setContacts(Array.isArray(data) ? data : data.value || [])
+                                    } catch (e) { window.alert("Erro ao carregar") }
+                                    finally { setIsLoadingContacts(false) }
+                                  }}
+                                  className="w-full mb-4 bg-yellow-300 text-black border-2 border-black font-bold hover:bg-yellow-400"
+                                >
+                                  {isLoadingContacts ? "Carregando..." : "Carregar Contatos"}
+                                </Button>
+
+                                {contacts.length > 0 && (
+                                  <div className="space-y-2">
+                                    <Input
+                                      placeholder="Buscar..."
+                                      value={contactSearchQuery}
+                                      onChange={e => setContactSearchQuery(e.target.value)}
+                                      className="border-2 border-black rounded-lg"
+                                    />
+                                    <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
+                                      {contacts.filter(c => (c.name || c.phone || "").toLowerCase().includes(contactSearchQuery.toLowerCase())).map((c, i) => {
+                                        const isSelected = selectedRecipients.some(r => r.id === c.phone)
+                                        return (
+                                          <div
+                                            key={i}
+                                            onClick={() => {
+                                              if (isSelected) setSelectedRecipients(prev => prev.filter(r => r.id !== c.phone))
+                                              else setSelectedRecipients([...selectedRecipients, { id: c.phone, name: c.name || c.phone, type: "contact" }])
+                                            }}
+                                            className={`p-2 border-2 rounded-lg cursor-pointer flex items-center justify-between font-medium text-sm transition-all ${isSelected ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-black'}`}
+                                          >
+                                            <span>{c.name || c.phone}</span>
+                                            {isSelected && <Check className="h-4 w-4" />}
                                           </div>
-                                        )}
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Lista de Grupos */}
+                            {isGroupsOpen && (
+                              <div className="bg-white border-2 border-black rounded-xl p-4 animate-in slide-in-from-top-2">
+                                <Button
+                                  onClick={async () => {
+                                    setIsLoadingGroups(true)
+                                    try {
+                                      const res = await fetch("/api/whatsapp/groups/list")
+                                      const data = await res.json()
+                                      setGroups(Array.isArray(data) ? data : data.value || [])
+                                    } catch (e) { window.alert("Erro ao carregar") }
+                                    finally { setIsLoadingGroups(false) }
+                                  }}
+                                  className="w-full mb-4 bg-blue-300 text-black border-2 border-black font-bold hover:bg-blue-400"
+                                >
+                                  {isLoadingGroups ? "Carregando..." : "Carregar Grupos"}
+                                </Button>
+
+                                {groups.length > 0 && (
+                                  <div className="space-y-2">
+                                    <Input
+                                      placeholder="Buscar grupos..."
+                                      value={groupSearchQuery}
+                                      onChange={e => setGroupSearchQuery(e.target.value)}
+                                      className="border-2 border-black rounded-lg"
+                                    />
+                                    <div className="max-h-60 overflow-y-auto space-y-1 pr-2">
+                                      {groups.filter(g => (g.name || g.subject || "").toLowerCase().includes(groupSearchQuery.toLowerCase())).map((g, i) => {
+                                        const id = g.id || g.phone
+                                        const isSelected = selectedRecipients.some(r => r.id === id)
+                                        return (
+                                          <div
+                                            key={i}
+                                            onClick={() => {
+                                              if (isSelected) setSelectedRecipients(prev => prev.filter(r => r.id !== id))
+                                              else setSelectedRecipients([...selectedRecipients, { id, name: g.name || g.subject, type: "group" }])
+                                            }}
+                                            className={`p-2 border-2 rounded-lg cursor-pointer flex items-center justify-between font-medium text-sm transition-all ${isSelected ? 'bg-black text-white border-black' : 'bg-white border-gray-200 hover:border-black'}`}
+                                          >
+                                            <span>{g.name || g.subject}</span>
+                                            {isSelected && <Check className="h-4 w-4" />}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                                <Button
+                                  onClick={() => setIsCreateGroupModalOpen(true)}
+                                  variant="ghost"
+                                  className="w-full mt-2 text-xs font-bold hover:bg-gray-100"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" /> Criar Novo Grupo
+                                </Button>
+                              </div>
+                            )}
+
+                            {/* Selecionados */}
+                            <div className="flex flex-wrap gap-2">
+                              {selectedRecipients.map(r => (
+                                <Badge key={r.id} className="bg-white text-black border-2 border-black pl-2 pr-1 py-1 rounded-lg font-bold flex items-center gap-1">
+                                  {r.name}
+                                  <button onClick={() => setSelectedRecipients(prev => prev.filter(x => x.id !== r.id))} className="hover:bg-red-100 rounded p-0.5">
+                                    <Trash2 className="h-3 w-3 text-red-500" />
+                                  </button>
+                                </Badge>
+                              ))}
+                            </div>
+
+                            <Button
+                              onClick={sendToWhatsapp}
+                              disabled={isSendingWhatsapp || selectedRecipients.length === 0}
+                              className="w-full h-14 bg-green-500 text-black border-2 border-black rounded-xl font-black text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-green-400 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {isSendingWhatsapp ? "Enviando..." : `Enviar para ${selectedRecipients.length} destinatários`}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

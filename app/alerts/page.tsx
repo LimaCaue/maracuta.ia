@@ -115,17 +115,17 @@ Avaliações técnicas apontam risco de concentração de poderes no Comitê Ges
       default: return "BAIXO"
     }
 
-      // Search and Group Creation State
-      const [contactSearchQuery, setContactSearchQuery] = useState("")
-      const [groupSearchQuery, setGroupSearchQuery] = useState("")
-      const [modalContactSearchQuery, setModalContactSearchQuery] = useState("")
-      const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false)
-      const [newGroupName, setNewGroupName] = useState("")
-      const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
-      const [isCreatingGroup, setIsCreatingGroup] = useState(false)
-      const [saveStatus, setSaveStatus] = useState<"idle"|"creatingAlert"|"updatingAlert"|"savingContent"|"done"|"error">("idle")
-      const [saveError, setSaveError] = useState<string|null>(null)
-    
+    // Search and Group Creation State
+    const [contactSearchQuery, setContactSearchQuery] = useState("")
+    const [groupSearchQuery, setGroupSearchQuery] = useState("")
+    const [modalContactSearchQuery, setModalContactSearchQuery] = useState("")
+    const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false)
+    const [newGroupName, setNewGroupName] = useState("")
+    const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
+    const [isCreatingGroup, setIsCreatingGroup] = useState(false)
+    const [saveStatus, setSaveStatus] = useState<"idle" | "creatingAlert" | "updatingAlert" | "savingContent" | "done" | "error">("idle")
+    const [saveError, setSaveError] = useState<string | null>(null)
+
   }
 
   return (
@@ -135,7 +135,8 @@ Avaliações técnicas apontam risco de concentração de poderes no Comitê Ges
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-black text-white flex items-center justify-center rounded-lg">
-              <Shield className="h-6 w-6" />
+
+              <img src="/favicon.ico" className="h-6 w-6" />
             </div>
             <Link href="/" className="text-2xl font-black">
               Maracuta<span className="text-pink-500">IA</span>

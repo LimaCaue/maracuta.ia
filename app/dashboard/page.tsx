@@ -56,7 +56,8 @@ export default async function DashboardPage() {
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-black text-white flex items-center justify-center rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Shield className="h-6 w-6" />
+
+              <img src="/favicon.ico" className="h-6 w-6" />
             </div>
             <Link href="/" className="text-2xl font-black tracking-tight hover:underline decoration-4 decoration-pink-500">
               Maracuta<span className="text-pink-500">IA</span>

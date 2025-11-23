@@ -14,31 +14,31 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
 
 
 
-  
-    const audioRef = useRef<HTMLAudioElement | null>(null)
-    const audioContainerRef = useRef<HTMLDivElement | null>(null)
-    const audioUrlRef = useRef<string | null>(null)
-    const [selectedRecipients, setSelectedRecipients] = useState<{ id: string; name: string; type: "contact" | "group" }[]>([])
-    const [contacts, setContacts] = useState<any[]>([])
-    const [isLoadingContacts, setIsLoadingContacts] = useState(false)
-    const [groups, setGroups] = useState<any[]>([])
-    const [isLoadingGroups, setIsLoadingGroups] = useState(false)
-    const [isContactsOpen, setIsContactsOpen] = useState(false)
-    const [isGroupsOpen, setIsGroupsOpen] = useState(false)
-    const [selectedContactName, setSelectedContactName] = useState("")
-    const [selectedGroupName, setSelectedGroupName] = useState("")
-  
-    // Search and Group Creation State
-    const [contactSearchQuery, setContactSearchQuery] = useState("")
-    const [groupSearchQuery, setGroupSearchQuery] = useState("")
-    const [modalContactSearchQuery, setModalContactSearchQuery] = useState("")
-    const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false)
-    const [newGroupName, setNewGroupName] = useState("")
-    const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
-    const [isCreatingGroup, setIsCreatingGroup] = useState(false)
-    const [saveStatus, setSaveStatus] = useState<"idle"|"creatingAlert"|"updatingAlert"|"savingContent"|"done"|"error">("idle")
-    const [saveError, setSaveError] = useState<string|null>(null)
-  
+
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioContainerRef = useRef<HTMLDivElement | null>(null)
+  const audioUrlRef = useRef<string | null>(null)
+  const [selectedRecipients, setSelectedRecipients] = useState<{ id: string; name: string; type: "contact" | "group" }[]>([])
+  const [contacts, setContacts] = useState<any[]>([])
+  const [isLoadingContacts, setIsLoadingContacts] = useState(false)
+  const [groups, setGroups] = useState<any[]>([])
+  const [isLoadingGroups, setIsLoadingGroups] = useState(false)
+  const [isContactsOpen, setIsContactsOpen] = useState(false)
+  const [isGroupsOpen, setIsGroupsOpen] = useState(false)
+  const [selectedContactName, setSelectedContactName] = useState("")
+  const [selectedGroupName, setSelectedGroupName] = useState("")
+
+  // Search and Group Creation State
+  const [contactSearchQuery, setContactSearchQuery] = useState("")
+  const [groupSearchQuery, setGroupSearchQuery] = useState("")
+  const [modalContactSearchQuery, setModalContactSearchQuery] = useState("")
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false)
+  const [newGroupName, setNewGroupName] = useState("")
+  const [selectedContactsForGroup, setSelectedContactsForGroup] = useState<string[]>([])
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<"idle" | "creatingAlert" | "updatingAlert" | "savingContent" | "done" | "error">("idle")
+  const [saveError, setSaveError] = useState<string | null>(null)
+
   const alerts = [
     {
       id: "lei-15224-2025",
@@ -127,19 +127,19 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: userContent }
-            ],
-            temperature: 0.4,
-            max_completion_tokens: 1200
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userContent }
+          ],
+          temperature: 0.4,
+          max_completion_tokens: 1200
         })
       })
       const j = await r.json()
       const content = j.choices?.[0]?.message?.content || ""
       const match = content.match(/{[\s\S]*}/)
       if (match) {
-        try { return JSON.parse(match[0]) } catch {}
+        try { return JSON.parse(match[0]) } catch { }
       }
       return null
     } catch {
@@ -185,9 +185,9 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
   if (remote) {
     aiAnalysis = {
       summary: remote.summary || aiAnalysis.summary,
-      keyPoints: Array.isArray(remote.keyPoints) && remote.keyPoints.length ? remote.keyPoints.slice(0,4) : aiAnalysis.keyPoints,
+      keyPoints: Array.isArray(remote.keyPoints) && remote.keyPoints.length ? remote.keyPoints.slice(0, 4) : aiAnalysis.keyPoints,
       recommendations: Array.isArray(remote.recommendations) && remote.recommendations.length ? remote.recommendations : aiAnalysis.recommendations,
-      legalReferences: Array.isArray(remote.legalReferences) && remote.legalReferences.length ? remote.legalReferences.slice(0,3) : aiAnalysis.legalReferences
+      legalReferences: Array.isArray(remote.legalReferences) && remote.legalReferences.length ? remote.legalReferences.slice(0, 3) : aiAnalysis.legalReferences
     }
   }
 
@@ -197,7 +197,7 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-black text-white flex items-center justify-center rounded-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-              <Shield className="h-6 w-6" />
+              <img src="/favicon.ico" className="h-6 w-6" />
             </div>
             <Link href="/" className="text-2xl font-black tracking-tight hover:underline decoration-4 decoration-pink-500">
               Maracuta<span className="text-pink-500">IA</span>
@@ -270,7 +270,7 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
               </div>
             </div>
 
-            
+
 
             <div className="grid lg:grid-cols-2 gap-8">
               <div className="bg-white border-4 border-black rounded-3xl overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
@@ -282,10 +282,10 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
                 </div>
                 <div className="p-6 md:p-8">
                   <ul className="space-y-4">
-                    {aiAnalysis.keyPoints.map((p,i) => (
+                    {aiAnalysis.keyPoints.map((p, i) => (
                       <li key={i} className="flex items-start gap-4">
                         <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-black text-white border-2 border-black flex items-center justify-center font-black text-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,0.2)]">
-                          {i+1}
+                          {i + 1}
                         </div>
                         <span className="text-lg font-medium text-zinc-700 pt-0.5">{p}</span>
                       </li>
@@ -303,7 +303,7 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
                 </div>
                 <div className="p-6 md:p-8">
                   <ul className="space-y-4">
-                    {aiAnalysis.recommendations.map((r,i) => (
+                    {aiAnalysis.recommendations.map((r, i) => (
                       <li key={i} className="flex items-start gap-3">
                         <Zap className="h-6 w-6 text-yellow-500 shrink-0 mt-0.5" />
                         <span className="text-lg font-medium text-zinc-700">{r}</span>
@@ -323,7 +323,7 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
               </div>
               <div className="p-6 md:p-8">
                 <ul className="space-y-3">
-                  {aiAnalysis.legalReferences.map((ref,i) => (
+                  {aiAnalysis.legalReferences.map((ref, i) => (
                     <li key={i} className="text-lg font-medium text-zinc-600 flex items-start gap-3 bg-gray-50 p-3 rounded-xl border-2 border-transparent hover:border-black transition-all">
                       <span className="text-black font-black">§</span>
                       <span>{ref}</span>
@@ -346,7 +346,7 @@ export default async function AnalyzeMockPage({ searchParams }: { searchParams: 
                 </Link>
               </Button>
               <p className="text-sm font-bold text-zinc-500 mt-4">
-                
+
               </p>
             </div>
           </div>
