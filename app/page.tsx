@@ -16,7 +16,7 @@ export default function Home() {
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Shield className="h-8 w-8 text-primary animate-float" />
-              <span className="text-2xl font-bold gradient-text">Sentinela Vox</span>
+              <span className="text-2xl font-bold gradient-text">MaracutaIA</span>
             </div>
             <div className="flex items-center gap-4">
               <Button variant="ghost" className="hidden md:inline-flex hover-lift">
@@ -98,7 +98,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-br from-destructive/0 to-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <CardContent className="p-6 relative z-10">
                 <AlertTriangle className="h-12 w-12 text-destructive mb-4 group-hover:scale-110 transition-transform duration-300" />
-                <h3 className="text-xl font-bold mb-2">Jabutis Escondidos</h3>
+                <h3 className="text-xl font-bold mb-2">Maracutaias Escondidas</h3>
                 <p className="text-muted-foreground">
                   Emendas perigosas inseridas em projetos aparentemente inofensivos, escondidas na página 40
                 </p>
@@ -162,7 +162,7 @@ export default function Home() {
                 <div>
                   <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">Detecta Riscos Escondidos</h3>
                   <p className="text-muted-foreground">
-                    Identifica "jabutis", termos vagos que permitem corrupção, e artigos que prejudicam classes D/E
+                    Identifica "maracutaias", termos vagos que permitem corrupção, e artigos que prejudicam classes D/E
                   </p>
                 </div>
               </div>
@@ -317,7 +317,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2 group">
               <Shield className="h-6 w-6 text-primary group-hover:scale-110 transition-transform" />
-              <span className="text-lg font-bold gradient-text">Sentinela Vox</span>
+              <span className="text-lg font-bold gradient-text">MaracutaIA</span>
             </div>
 
             <div className="flex gap-6 text-sm text-muted-foreground">
@@ -335,7 +335,7 @@ export default function Home() {
               </a>
             </div>
 
-            <p className="text-sm text-muted-foreground">© 2025 Sentinela Vox. Tecnologia a favor do cidadão.</p>
+            <p className="text-sm text-muted-foreground">© 2025 MaracutaIA. Tecnologia a favor do cidadão.</p>
           </div>
         </div>
       </footer>

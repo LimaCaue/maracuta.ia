@@ -184,8 +184,8 @@ export default function CreateViralPage() {
     } catch (e) {
       // fallback local rápido (replicar versão curta se necessário)
       const short = (text: string, n = 250) => text.replace(/\s+/g, " ").trim().slice(0, n)
-      const summary = short(analysisText || `${title} — verifique os detalhes na Sentinela Vox.`, 240)
-      let fallback = `🔎 ${title}\n\n${summary}\n\nFonte: Sentinela Vox.`
+      const summary = short(analysisText || `${title} — verifique os detalhes na MaracutaIA.`, 240)
+      let fallback = `🔎 ${title}\n\n${summary}\n\nFonte: MaracutaIA.`
       // Append the poll question at the end
       fallback += "\n\nQual sua opinião sobre isso ?\n1 - Gostei \n2- Mais gostei do que não gostei\n3 - Neutro\n4 - Mais não gostei do que gostei\n5 - Não gostei"
       setGeneratedScript(fallback)
@@ -439,7 +439,7 @@ export default function CreateViralPage() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <Shield className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">Sentinela Vox</span>
+              <span className="text-2xl font-bold">MaracutaIA</span>
             </Link>
             <nav className="flex items-center gap-4">
               <Button variant="ghost" asChild>
