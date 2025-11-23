@@ -1,4 +1,4 @@
-# 🛡️ Vox Sentinel
+# 🛡️ MaracutaIA
 
 Sistema inteligente de monitoramento de propostas legislativas com criação automatizada de conteúdo viral para WhatsApp.
 

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     // Fallback local generator (mesma lógica que o client espera)
     const localMakeMessage = () => {
       const short = (text: string, n = 250) => text.replace(/\s+/g, " ").trim().slice(0, n)
-      const summary = short(analysisText || `${title} — verifique os detalhes na Sentinela Vox.`, 240)
+      const summary = short(analysisText || `${title} — verifique os detalhes na MaracutaIA.`, 240)
       const formatSummary = (text: string, max = 200) => text.replace(/\s+/g, " ").trim().slice(0, max)
       const callToAction = {
         geral: "Compartilhe com quem precisa saber!",
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
       if (tone === "informative") {
         return {
-          geral: `🔎 Entenda: ${title}\n\n${formatSummary(summary)}\n\nFonte: Sentinela Vox.`,
+          geral: `🔎 Entenda: ${title}\n\n${formatSummary(summary)}\n\nFonte: MaracutaIA.`,
           classe_de: `ℹ️ Informação importante: ${title}\n\n${formatSummary(summary)}\n\nConfira e compartilhe com sua comunidade.`,
           jovens: `📚 Fica por dentro: ${title}\n\n${formatSummary(summary, 180)}\n\nQuer saber mais? Espalha aí.`,
         }[audience]
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
         }[audience]
       }
 
-      return `${title}\n\n${formatSummary(summary)}\n\nFonte: Sentinela Vox.`
+      return `${title}\n\n${formatSummary(summary)}\n\nFonte: MaracutaIA.`
     }
 
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY

@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Sentinela Vox - O Waze dos Riscos Legislativos",
+  title: "MaracutaIA - O Waze dos Riscos Legislativos",
   description:
     "IA que monitora 130 mil propostas legislativas em tempo real e te alerta sobre riscos escondidos antes da votação. Proteção cívica contra leis prejudiciais.",
   generator: "v0.app",

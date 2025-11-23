@@ -10,7 +10,7 @@ export default function VerifyPage() {
         <div className="flex justify-center mb-8">
           <Link href="/" className="flex items-center gap-2">
             <Shield className="h-10 w-10 text-primary" />
-            <span className="text-2xl font-bold">Sentinela Vox</span>
+            <span className="text-2xl font-bold">MaracutaIA</span>
           </Link>
         </div>
 
