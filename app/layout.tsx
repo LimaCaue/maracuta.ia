@@ -39,7 +39,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`font-sans antialiased`}>
+      <body className={`font-sans antialiased relative min-h-screen bg-transparent`}>
+        {/* Global Background */}
+        <div className="fixed inset-0 z-[-1] pointer-events-none">
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30"
+            style={{
+              backgroundImage: 'url("https://www.camara.leg.br/midias/image/2025/04/img20250414183709820-768x473.jpg")',
+            }}
+          />
+        </div>
+
         {children}
         <Analytics />
       </body>

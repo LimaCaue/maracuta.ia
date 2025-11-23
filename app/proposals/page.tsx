@@ -59,22 +59,10 @@ export default async function ProposalsPage({
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-background">
-      {/* Background with blur effect */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage: 'url("https://www12.senado.leg.br/noticias/materias/2025/01/31/camara-tambem-tera-eleicao-em-1o-de-fevereiro/20150122_00159.jpg/mural/imagem_materia")',
-            filter: 'blur(8px)'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/80" />
-        <div className="absolute inset-0 backdrop-blur-sm" />
-      </div>
+    <div className="min-h-screen w-full relative overflow-hidden">
 
       {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-sm">
+      <header className="relative z-10 border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
@@ -106,7 +94,7 @@ export default async function ProposalsPage({
             <p className="text-muted-foreground">Monitoramento de propostas da Câmara e Senado</p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card/50 backdrop-blur-sm p-4 rounded-lg border border-border">
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card p-4 rounded-lg border border-border">
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <FilterSelect />
             </div>
@@ -138,7 +126,7 @@ export default async function ProposalsPage({
               return (
                 <Card
                   key={proposal.id}
-                  className={`bg-card/50 backdrop-blur-sm hover:shadow-md transition-shadow ${criticalAlert ? "border-red-500/50" : ""}`}
+                  className={`bg-card hover:shadow-md transition-shadow ${criticalAlert ? "border-red-500/50" : ""}`}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between gap-4">
@@ -206,7 +194,7 @@ export default async function ProposalsPage({
               )
             })
           ) : (
-            <Card className="bg-card/50 backdrop-blur-sm">
+            <Card className="bg-card">
               <CardContent className="p-12 text-center">
                 <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <h2 className="text-xl font-bold mb-2">Nenhuma proposta encontrada</h2>

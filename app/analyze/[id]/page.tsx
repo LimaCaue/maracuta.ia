@@ -198,21 +198,9 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
     }
 
     return (
-        <div className="min-h-screen w-full relative overflow-hidden bg-background">
-            {/* Background with blur effect */}
-            <div className="absolute inset-0 z-0 pointer-events-none">
-                <div
-                    className="absolute inset-0 bg-cover bg-center opacity-20"
-                    style={{
-                        backgroundImage: 'url("https://www12.senado.leg.br/noticias/materias/2025/01/31/camara-tambem-tera-eleicao-em-1o-de-fevereiro/20150122_00159.jpg/mural/imagem_materia")',
-                        filter: 'blur(8px)'
-                    }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/80" />
-                <div className="absolute inset-0 backdrop-blur-sm" />
-            </div>
+        <div className="min-h-screen w-full relative overflow-hidden">
 
-            <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-sm">
+            <header className="relative z-10 border-b border-border bg-card">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="flex items-center gap-2">
@@ -244,7 +232,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
 
                 <div className="space-y-6">
                     {/* Header com informações da proposta */}
-                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent backdrop-blur-sm">
+                    <Card className="border-primary/70 backdrop-blur-sm">
                         <CardHeader>
                             <div className="flex items-start gap-4">
                                 <div className="p-3 rounded-lg bg-primary/10">
@@ -276,7 +264,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
                     </Card>
 
                     {/* Resumo da Análise */}
-                    <Card className="bg-card/50 backdrop-blur-sm">
+                    <Card className="bg-card">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <FileText className="h-5 w-5" />
@@ -290,7 +278,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
 
                     {/* Alertas Detectados */}
                     {alerts && alerts.length > 0 && (
-                        <Card className="bg-card/50 backdrop-blur-sm">
+                        <Card className="bg-card">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -331,7 +319,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
 
                     <div className="grid lg:grid-cols-2 gap-6">
                         {/* Pontos-Chave */}
-                        <Card className="bg-card/50 backdrop-blur-sm">
+                        <Card className="bg-card">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <TrendingUp className="h-5 w-5" />
@@ -353,7 +341,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
                         </Card>
 
                         {/* Recomendações */}
-                        <Card className="bg-card/50 backdrop-blur-sm">
+                        <Card className="bg-card">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Sparkles className="h-5 w-5" />
@@ -374,7 +362,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
                     </div>
 
                     {/* Referências Legais */}
-                    <Card className="bg-card/50 backdrop-blur-sm">
+                    <Card className="bg-card">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
                                 <FileText className="h-5 w-5" />
@@ -394,7 +382,7 @@ Retorne apenas um JSON com os campos: summary (string), keyPoints (array de stri
                     </Card>
 
                     {/* Ações */}
-                    <Card className="border-primary/20 bg-card/50 backdrop-blur-sm">
+                    <Card className="border-primary/20 bg-card">
                         <CardHeader>
                             <CardTitle>Próximos Passos</CardTitle>
                             <CardDescription>Crie conteúdo viral com base no alerta desta análise</CardDescription>

@@ -48,21 +48,9 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-background">
-      {/* Background with blur effect */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage: 'url("https://www12.senado.leg.br/noticias/materias/2025/01/31/camara-tambem-tera-eleicao-em-1o-de-fevereiro/20150122_00159.jpg/mural/imagem_materia")',
-            filter: 'blur(8px)'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/80" />
-        <div className="absolute inset-0 backdrop-blur-sm" />
-      </div>
+    <div className="min-h-screen w-full relative overflow-hidden">
 
-      <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-sm">
+      <header className="relative z-10 border-b border-border bg-card/100 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
@@ -91,7 +79,7 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm border-primary/10">
+            <Card className="bg-card/100 backdrop-blur-sm border-primary/10">
               <CardHeader>
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex-1">
@@ -208,7 +196,7 @@ export default async function ProposalDetailPage({ params }: { params: Promise<{
           </div>
 
           <div className="space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm">
+            <Card className="bg-card/100 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Ações</CardTitle>
               </CardHeader>

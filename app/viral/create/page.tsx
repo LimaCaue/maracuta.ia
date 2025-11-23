@@ -414,22 +414,9 @@ export default function CreateViralPage() {
   }
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-background">
-      {/* Background with blur effect */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage:
-              'url("https://www12.senado.leg.br/noticias/materias/2025/01/31/camara-tambem-tera-eleicao-em-1o-de-fevereiro/20150122_00159.jpg/mural/imagem_materia")',
-            filter: "blur(8px)",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/80" />
-        <div className="absolute inset-0 backdrop-blur-sm" />
-      </div>
+    <div className="min-h-screen w-full relative overflow-hidden">
 
-      <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-sm">
+      <header className="relative z-10 border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
@@ -455,7 +442,7 @@ export default function CreateViralPage() {
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Coluna Esquerda: Configurações */}
             <div className="space-y-6">
-              <Card className="bg-card/50 backdrop-blur-sm">
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle className="text-lg">Criando alerta para</CardTitle>
                   <CardDescription>Proposta relacionada ao alerta selecionado</CardDescription>
@@ -500,7 +487,7 @@ export default function CreateViralPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-card/50 backdrop-blur-sm">
+              <Card className="bg-card">
                 <CardHeader>
                   <CardTitle>Configurações</CardTitle>
                   <CardDescription>Personalize o tom e o público-alvo</CardDescription>
@@ -627,7 +614,7 @@ export default function CreateViralPage() {
             <div className="space-y-6">
 
               {(isGenerating || isGeneratingAudio) && (
-                <Card className="bg-card/50 backdrop-blur-sm border-primary/20 h-full flex items-center justify-center min-h-[400px]">
+                <Card className="bg-card border-primary/20 h-full flex items-center justify-center min-h-[400px]">
                   <CardContent className="flex flex-col items-center gap-6 p-8 text-center">
                     <div className="relative">
                       <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
@@ -670,7 +657,7 @@ export default function CreateViralPage() {
               )}
 
               {!isGenerating && !isGeneratingAudio && generatedScript && (
-                <Card className="bg-card/50 backdrop-blur-sm">
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle>Conteúdo Gerado</CardTitle>
                     <CardDescription>Revise o script e ouça o áudio antes de compartilhar</CardDescription>

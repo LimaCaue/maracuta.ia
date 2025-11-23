@@ -50,22 +50,10 @@ export default async function DashboardPage() {
     .limit(5)
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-background">
-      {/* Background with blur effect */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{
-            backgroundImage: 'url("https://www12.senado.leg.br/noticias/materias/2025/01/31/camara-tambem-tera-eleicao-em-1o-de-fevereiro/20150122_00159.jpg/mural/imagem_materia")',
-            filter: 'blur(8px)'
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/80" />
-        <div className="absolute inset-0 backdrop-blur-sm" />
-      </div>
+    <div className="min-h-screen w-full relative overflow-hidden">
 
       {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card/50 backdrop-blur-sm">
+      <header className="relative z-10 border-b border-border bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
@@ -110,7 +98,7 @@ export default async function DashboardPage() {
       <main className="relative z-10 container mx-auto px-4 py-8">
         {/* Stats Grid */}
         <div className="grid gap-6 md:grid-cols-3 mb-8">
-          <Card className="bg-card/50 backdrop-blur-sm">
+          <Card className="bg-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Propostas Monitoradas</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
@@ -121,7 +109,7 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm">
+          <Card className="bg-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Principais Tipos</CardTitle>
               <FileType className="h-4 w-4 text-blue-500" />
@@ -141,7 +129,7 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-card/50 backdrop-blur-sm">
+          <Card className="bg-card">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Alertas Críticos</CardTitle>
               <Shield className="h-4 w-4 text-red-500" />
@@ -155,7 +143,7 @@ export default async function DashboardPage() {
 
         <div className="grid gap-8 lg:grid-cols-1">
           {/* Recent Proposals */}
-          <Card className="bg-card/50 backdrop-blur-sm">
+          <Card className="bg-card/100 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Propostas em Tramitação</CardTitle>
               <CardDescription>Últimas propostas adicionadas ao monitoramento</CardDescription>
