@@ -25,7 +25,7 @@ Clone o repositório e instale as dependências:
 
 ```bash
 git clone <url-do-repositorio>
-cd vox-sentinel
+cd maracuta.ia
 npm install
 ```
 
