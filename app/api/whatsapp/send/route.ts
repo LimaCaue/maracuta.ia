@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 export async function POST(req: Request) {
     try {
         const body = await req.json()
-        const { text, audio, phone } = body
+        const { text, audio, phone, poll } = body
 
         if (!text && !audio) {
             return NextResponse.json({ error: "Content required (text or audio)" }, { status: 400 })
@@ -167,6 +167,42 @@ export async function POST(req: Request) {
             } catch (e) {
                 console.error("Error sending audio:", e)
                 results.push({ type: "audio", status: "error", error: String(e) })
+            }
+        }
+
+        // 3. Send Poll
+        if (poll && poll.question && poll.options && poll.options.length > 0) {
+            try {
+                let url, payload, headers: any
+
+                if (isZApi) {
+                    url = `https://api.z-api.io/instances/${INSTANCE_ID}/token/${TOKEN}/send-poll`
+                    payload = {
+                        phone: targetPhone,
+                        message: poll.question,
+                        poll: poll.options
+                    }
+                    headers = { "Content-Type": "application/json" }
+                    if (CLIENT_TOKEN) headers["Client-Token"] = CLIENT_TOKEN
+                }
+
+                if (url) {
+                    const res = await fetch(url, {
+                        method: "POST",
+                        headers,
+                        body: JSON.stringify(payload)
+                    })
+
+                    if (!res.ok) {
+                        const errText = await res.text()
+                        console.error("WhatsApp Poll Error:", errText)
+                        throw new Error(`Failed to send poll: ${res.status}`)
+                    }
+                    results.push({ type: "poll", status: "sent" })
+                }
+            } catch (e) {
+                console.error("Error sending poll:", e)
+                results.push({ type: "poll", status: "error", error: String(e) })
             }
         }
 
